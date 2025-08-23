@@ -21,14 +21,19 @@ export default function SetPinPage() {
     const [confirmPin, setConfirmPin] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Redirect if user is not logged in or PIN is already set
-    if (user && user.pinSet) {
-        router.push('/company-dashboard');
-        return null;
-    }
-     if (user && user.role !== 'employee') {
-        router.push(user.role === 'admin' ? '/admin' : '/company-dashboard');
-        return null;
+    // Redirect users based on their setup status
+    if (user) {
+        if (!user.pinSet) {
+            // Users without PIN stay on this page for initial setup
+        } else {
+            // Users with PIN already set go to appropriate dashboard
+            if (user.role === 'admin') {
+                router.push('/admin');
+            } else {
+                router.push('/company-dashboard');
+            }
+            return null;
+        }
     }
 
 
@@ -52,7 +57,13 @@ export default function SetPinPage() {
             await data.users.update(user.id, { pinHash: pin, pinSet: true });
             await refreshUser(); // Refresh user state in context
             toast({ title: "PIN Set Successfully", description: "You can now access the dashboard." });
-            router.push('/company-dashboard');
+            
+            // Redirect based on user role
+            if (user.role === 'admin') {
+                router.push('/admin');
+            } else {
+                router.push('/company-dashboard');
+            }
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Failed to set PIN. Please try again." });
         } finally {
@@ -73,7 +84,7 @@ export default function SetPinPage() {
                     </div>
                     <CardTitle className="text-2xl">Set Your Secure PIN</CardTitle>
                     <CardDescription>
-                       Welcome! To secure your account, please create a 6-digit PIN. You will use this PIN to authorize sending secure emails.
+                       Welcome! To secure your account, please create a 6-digit PIN. You will use this PIN to authorize sending secure emails. You can update your PIN later in Settings.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

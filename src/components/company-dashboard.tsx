@@ -57,7 +57,7 @@ function AddEmployeeDialog({ companyId, onEmployeeAdded }: { companyId: string, 
                 role: 'employee',
                 companyId,
             });
-            toast({ title: "Success", description: "Employee created and setup email sent." });
+            toast({ title: "Success", description: "Employee created and onboarding email sent." });
             onEmployeeAdded();
             setIsOpen(false);
             setName("");
@@ -81,7 +81,7 @@ function AddEmployeeDialog({ companyId, onEmployeeAdded }: { companyId: string, 
                 <DialogHeader>
                     <DialogTitle>Add Employee</DialogTitle>
                     <DialogDescription>
-                        Create a new employee for your company. They will receive an email to set up their password.
+                        Create a new employee for your company. They will receive an onboarding email to set up their password and PIN.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -193,7 +193,7 @@ export default function CompanyDashboard() {
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
-            href="#"
+            href="/settings"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
           >
             <Settings className="h-5 w-5" />

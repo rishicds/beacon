@@ -57,13 +57,14 @@ export default function SignupPage() {
         role: "admin", // Default to admin as requested
         companyId: null, // Admins aren't tied to a company
         avatarUrl: `https://placehold.co/36x36.png`,
+        pinSet: false, // New users need to set up PIN
       });
 
       toast({
         title: "Signup Successful",
-        description: "Admin account created. You can now log in.",
+        description: "Account created successfully. Please set up your PIN.",
       });
-      router.push("/login");
+      router.push("/set-pin");
 
     } catch (error: any) {
       console.error("Signup error:", error);

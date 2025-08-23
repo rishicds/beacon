@@ -64,7 +64,7 @@ function AddUserDialog({ companies, onUserAdded }: { companies: Company[], onUse
                 role: 'company_admin',
                 companyId,
             });
-            toast({ title: "Success", description: "Company admin created and setup email sent." });
+            toast({ title: "Success", description: "Company admin created and onboarding email sent." });
             onUserAdded();
             setIsOpen(false);
             setName("");
@@ -89,7 +89,7 @@ function AddUserDialog({ companies, onUserAdded }: { companies: Company[], onUse
                 <DialogHeader>
                     <DialogTitle>Add Company Admin</DialogTitle>
                     <DialogDescription>
-                        Create a new company admin and assign them to a company. They will receive an email to set up their password.
+                        Create a new company admin and assign them to a company. They will receive an onboarding email to set up their password and PIN.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">

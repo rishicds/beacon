@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Bold, Italic, Underline, Paperclip, X, Sparkles, Send, UserCheck } from "lucide-react";
+import { ArrowLeft, Bold, Italic, Underline, Paperclip, X, Sparkles, Send, UserCheck, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,14 @@ import { composeAndSendEmail } from "@/ai/flows/compose-email-flow";
 import GuardianMailLogo from "@/components/icons/logo";
 import { useAuth } from "@/context/auth-context";
 import AppHeader from "@/components/app-header";
+import { data, type User } from "@/lib/data";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const MAX_FILE_SIZE_MB = 25;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export default function ComposePage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +32,48 @@ export default function ComposePage() {
   const [attachment, setAttachment] = useState<File | null>(null);
   const [linkExpires, setLinkExpires] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
+  const [allowUnknownRecipients, setAllowUnknownRecipients] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
   const bodyRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const allUsers = await data.users.list();
+        setUsers(allUsers);
+      } catch (error) {
+        console.error('Failed to load users:', error);
+      }
+    };
+    loadUsers();
+  }, []);
+
+  const filteredUsers = users.filter(u => 
+    u.id !== user?.id && // Don't show current user
+    (u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
+     u.email.toLowerCase().includes(userSearchQuery.toLowerCase()))
+  );
+
+  const handleUserSelect = (selectedUser: User) => {
+    setSelectedUser(selectedUser);
+    setRecipient(selectedUser.email);
+    setUserDropdownOpen(false);
+    setUserSearchQuery("");
+  };
+
+  const handleAllowUnknownRecipientsChange = (checked: boolean) => {
+    setAllowUnknownRecipients(checked);
+    if (!checked) {
+      // Reset to user selection mode
+      setSelectedUser(null);
+      setRecipient("");
+      setUserSearchQuery("");
+    }
+  };
 
   const handleFormat = (command: string) => {
     document.execCommand(command, false);
@@ -70,11 +112,27 @@ export default function ComposePage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!user || !user.companyId) {
+    
+    // Enhanced debugging for authentication issues
+    console.log('User object:', user);
+    console.log('User companyId:', user?.companyId);
+    console.log('User role:', user?.role);
+    
+    if (!user) {
         toast({
             variant: "destructive",
             title: "Authentication Error",
-            description: "You must be logged in and part of a company to send emails.",
+            description: "You must be logged in to send emails. Please sign in first.",
+        });
+        return;
+    }
+    
+    // Admin users don't need a companyId, other roles do
+    if (user.role !== 'admin' && !user.companyId) {
+        toast({
+            variant: "destructive",
+            title: "Company Association Required",
+            description: `Your account (${user.role}) is not associated with a company. Please contact your administrator.`,
         });
         return;
     }
@@ -86,6 +144,17 @@ export default function ComposePage() {
         });
         return;
     }
+
+    // Validate recipient based on mode
+    if (!allowUnknownRecipients && !selectedUser) {
+        toast({
+            variant: "destructive",
+            title: "Invalid Recipient",
+            description: "Please select a user from the database or enable 'Send to Unknown Recipients'.",
+        });
+        return;
+    }
+
     setIsLoading(true);
 
     let attachmentDataUri: string | undefined;
@@ -94,17 +163,23 @@ export default function ComposePage() {
     }
 
     try {
-      const result = await composeAndSendEmail({ 
+      const emailData: any = { 
         recipient, 
         subject, 
         body,
-        attachmentDataUri,
-        attachmentFilename: attachment?.name,
-        companyId: user.companyId,
+        companyId: user.companyId || 'ADMIN', // Use 'ADMIN' as fallback for admin users
         senderId: user.id,
         linkExpires,
         isGuest,
-      });
+      };
+
+      // Only include attachment fields if there's an attachment
+      if (attachment && attachmentDataUri) {
+        emailData.attachmentDataUri = attachmentDataUri;
+        emailData.attachmentFilename = attachment.name;
+      }
+
+      const result = await composeAndSendEmail(emailData);
 
       if (result.success) {
         toast({
@@ -131,8 +206,43 @@ export default function ComposePage() {
     }
   };
   
+  if (loading) {
+      return (
+        <div className="flex min-h-screen flex-col bg-muted/40">
+          <AppHeader />
+          <main className="flex-1 p-4 sm:p-6">
+            <Card className="max-w-4xl mx-auto shadow-lg">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+      );
+  }
+  
   if (!user) {
-      return null;
+      return (
+        <div className="flex min-h-screen flex-col bg-muted/40">
+          <AppHeader />
+          <main className="flex-1 p-4 sm:p-6">
+            <Card className="max-w-4xl mx-auto shadow-lg">
+              <CardContent className="p-8">
+                <div className="text-center">
+                  <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+                  <p className="text-muted-foreground mb-4">You must be logged in to compose emails.</p>
+                  <Button onClick={() => router.push('/login')}>Sign In</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+      );
   }
   
   const dashboardHref = user.role === 'admin' ? '/admin' : '/company-dashboard';
@@ -151,10 +261,97 @@ export default function ComposePage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="grid grid-cols-[80px_1fr] items-center gap-4">
+                    <Label htmlFor="allow-unknown" className="text-right text-muted-foreground">
+                      Recipients
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        id="allow-unknown" 
+                        checked={allowUnknownRecipients} 
+                        onCheckedChange={handleAllowUnknownRecipientsChange} 
+                      />
+                      <Label htmlFor="allow-unknown" className="text-sm text-muted-foreground">
+                        Send to unknown recipients
+                      </Label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-[80px_1fr] items-center gap-4">
                     <Label htmlFor="recipient" className="text-right text-muted-foreground">
                       To
                     </Label>
-                    <Input id="recipient" name="recipient" type="email" required placeholder="email@example.com" value={recipient} onChange={e => setRecipient(e.target.value)} className="border-0 border-b rounded-none shadow-none focus-visible:ring-0 focus:border-primary" />
+                    {allowUnknownRecipients ? (
+                      <Input 
+                        id="recipient" 
+                        name="recipient" 
+                        type="email" 
+                        required 
+                        placeholder="email@example.com" 
+                        value={recipient} 
+                        onChange={e => setRecipient(e.target.value)} 
+                        className="border-0 border-b rounded-none shadow-none focus-visible:ring-0 focus:border-primary" 
+                      />
+                    ) : (
+                      <Popover open={userDropdownOpen} onOpenChange={setUserDropdownOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={userDropdownOpen}
+                            className="w-full justify-between border-0 border-b rounded-none shadow-none focus-visible:ring-0 hover:bg-transparent"
+                          >
+                            {selectedUser ? (
+                              <span className="flex items-center gap-2">
+                                <span>{selectedUser.name}</span>
+                                <span className="text-muted-foreground text-sm">({selectedUser.email})</span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">Select a user...</span>
+                            )}
+                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                          <div className="p-2">
+                            <Input
+                              placeholder="Search users..."
+                              value={userSearchQuery}
+                              onChange={(e) => setUserSearchQuery(e.target.value)}
+                              className="mb-2"
+                            />
+                            <div className="max-h-60 overflow-y-auto">
+                              {filteredUsers.length === 0 ? (
+                                <div className="p-2 text-sm text-muted-foreground text-center">
+                                  No users found
+                                </div>
+                              ) : (
+                                filteredUsers.map((user) => (
+                                  <Button
+                                    key={user.id}
+                                    variant="ghost"
+                                    className="w-full justify-start p-2 h-auto"
+                                    onClick={() => handleUserSelect(user)}
+                                  >
+                                    <div className="flex flex-col items-start">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">{user.name}</span>
+                                        <span className="text-xs bg-muted px-1 rounded">
+                                          {user.role}
+                                        </span>
+                                      </div>
+                                      <span className="text-sm text-muted-foreground">{user.email}</span>
+                                    </div>
+                                    {selectedUser?.id === user.id && (
+                                      <Check className="ml-auto h-4 w-4" />
+                                    )}
+                                  </Button>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
                     <Label htmlFor="subject" className="text-right text-muted-foreground">
