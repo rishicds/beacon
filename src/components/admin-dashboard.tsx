@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   PlusCircle,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -68,10 +69,17 @@ export default function AdminDashboard() {
             <Users className="h-5 w-5" />
             <span className="sr-only">All Users</span>
           </Link>
+          <Link
+            href="/admin/emails"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <Mail className="h-5 w-5" />
+            <span className="sr-only">All Emails</span>
+          </Link>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
-            href="#"
+            href="/settings"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
           >
             <Settings className="h-5 w-5" />
@@ -102,6 +110,17 @@ export default function AdminDashboard() {
                         <CardTitle className="text-4xl">{emails.length}</CardTitle>
                     </CardHeader>
                  </Card>
+                 <Card>
+                    <CardHeader className="pb-2">
+                        <CardDescription>Recent Activity</CardDescription>
+                        <CardTitle className="text-4xl">{emails.filter(e => {
+                          const createdAt = typeof e.createdAt === 'string' ? new Date(e.createdAt) : e.createdAt.toDate();
+                          const yesterday = new Date();
+                          yesterday.setDate(yesterday.getDate() - 1);
+                          return createdAt > yesterday;
+                        }).length}</CardTitle>
+                    </CardHeader>
+                 </Card>
              </div>
             <NaturalLanguageQuery />
             <SummarizedReport />
@@ -126,6 +145,38 @@ export default function AdminDashboard() {
                     ))}
                     {companies.length > 5 && (
                         <p className="text-xs text-muted-foreground text-center">...and {companies.length - 5} more</p>
+                    )}
+                </CardContent>
+             </Card>
+             <Card className="shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Recent Emails</CardTitle>
+                    <Button asChild size="sm">
+                        <Link href="/admin/emails">
+                            View All
+                        </Link>
+                    </Button>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                    {emails.slice(0, 5).map(email => {
+                      const createdAt = typeof email.createdAt === 'string' ? new Date(email.createdAt) : email.createdAt.toDate();
+                      return (
+                        <div key={email.id} className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium truncate max-w-32">{email.subject}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {createdAt.toLocaleDateString()}
+                                </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">{email.recipient}</span>
+                        </div>
+                      );
+                    })}
+                    {emails.length > 5 && (
+                        <p className="text-xs text-muted-foreground text-center">...and {emails.length - 5} more</p>
+                    )}
+                    {emails.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center">No emails sent yet</p>
                     )}
                 </CardContent>
              </Card>

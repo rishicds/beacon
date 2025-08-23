@@ -1,5 +1,3 @@
-
-
 import { db, auth as firebaseAuth } from './firebase';
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, Timestamp, setDoc, limit, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
@@ -109,22 +107,28 @@ export const data = {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
     },
+    findByEmail: async (email: string): Promise<User | undefined> => {
+      const q = query(usersCollection, where("email", "==", email));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return undefined;
+      const userDoc = snapshot.docs[0];
+      return { id: userDoc.id, ...userDoc.data() } as User;
+    },
     delete: async (id: string): Promise<void> => {
       await deleteDoc(doc(db, "users", id));
     },
     createUser: async (userData: Omit<User, 'id' | 'avatarUrl' | 'pinHash' | 'pinSet'>): Promise<User> => {
         const batch = writeBatch(db);
-        const tempPassword = randomBytes(16).toString('hex');
+        const setupToken = randomBytes(32).toString('hex');
+        const setupTokenExpires = Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 hours
         
+        // Use setupToken as temporary password for initial authentication
         const userCredential = await createUserWithEmailAndPassword(
             firebaseAuth,
             userData.email,
-            tempPassword,
+            setupToken,
         );
         const authUser = userCredential.user;
-
-        const setupToken = randomBytes(32).toString('hex');
-        const setupTokenExpires = Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 hours
 
         const newUserDocRef = doc(db, "users", authUser.uid);
         const newUser: Omit<User, 'id'> = {
@@ -139,18 +143,18 @@ export const data = {
         await batch.commit();
 
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-        const setupLink = `${baseUrl}/setup/${setupToken}`;
+        const onboardingLink = `${baseUrl}/onboarding/${setupToken}`;
         const emailBody = `
             <h1>Welcome to GuardianMail!</h1>
-            <p>Your account has been created. Please complete your account setup by creating a password.</p>
-            <p>Click the link below to set your password. This link is valid for 24 hours.</p>
-            <p><a href="${setupLink}">Set Up Your Account</a></p>
+            <p>Your account has been created. Please complete your account onboarding by setting up your password and security PIN.</p>
+            <p>Click the link below to get started. This link is valid for 24 hours.</p>
+            <p><a href="${onboardingLink}">Complete Your Account Setup</a></p>
             <p>If you did not request this, please ignore this email.</p>
         `;
         
          await composeAndSendEmail({
             recipient: userData.email,
-            subject: "Complete Your GuardianMail Account Setup",
+            subject: "Welcome to GuardianMail - Complete Your Onboarding",
             body: emailBody,
             companyId: 'SYSTEM', 
             senderId: 'SYSTEM',
@@ -171,6 +175,13 @@ export const data = {
         }
 
         await updateDoc(userRef, dataToUpdate);
+    },
+    verifyPin: async (id: string, pin: string): Promise<boolean> => {
+        const user = await data.users.findById(id);
+        if (!user || !user.pinHash) {
+            return false;
+        }
+        return await bcrypt.compare(pin, user.pinHash);
     },
     resetPin: async(id: string): Promise<void> => {
         const userRef = doc(db, 'users', id);

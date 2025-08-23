@@ -64,6 +64,7 @@ export default function SecureLinkPage() {
   const [unlockedContent, setUnlockedContent] = useState<VerifyPinOutput['document'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [emailMeta, setEmailMeta] = useState<Email | null>(null);
+  const [requiresPin, setRequiresPin] = useState<boolean>(true);
   const params = useParams();
   const token = params.token as string;
 
@@ -101,6 +102,27 @@ export default function SecureLinkPage() {
             setUnlockedContent(result.document ?? null);
           } else {
             setError(result.error || "Could not retrieve guest content.");
+          }
+        } else {
+          // Check if recipient is in the database to determine if PIN is required
+          const allUsers = await data.users.list();
+          const recipientInDb = allUsers.find(user => user.email === email.recipient);
+          
+          if (!recipientInDb) {
+            // Recipient not in database - unlock directly (no PIN required)
+            setRequiresPin(false);
+            const result = await verifyPinAndGetContent({ token, pin: "" });
+            if (result.success) {
+              setUnlockedContent(result.document ?? null);
+            } else {
+              setError(result.error || "Could not retrieve content.");
+            }
+          } else if (!recipientInDb.pinHash) {
+            // Recipient exists but hasn't set PIN
+            setError("You need to set up your PIN before accessing secure content. Please contact your administrator.");
+          } else {
+            // Recipient exists and has PIN - require PIN verification
+            setRequiresPin(true);
           }
         }
       } catch (err) {
@@ -158,7 +180,7 @@ export default function SecureLinkPage() {
       return <UnlockedContentDisplay document={unlockedContent} />;
     }
     
-    if (emailMeta && !emailMeta.isGuest) {
+    if (emailMeta && !emailMeta.isGuest && requiresPin) {
       return (
         <Card className="w-full max-w-sm shadow-2xl">
           <CardHeader className="text-center">
@@ -166,7 +188,7 @@ export default function SecureLinkPage() {
               <LockKeyhole className="h-8 w-8 text-primary" />
             </div>
             <CardTitle className="text-2xl">Secure Access</CardTitle>
-            <CardDescription>Enter the sender's PIN to view the protected content.</CardDescription>
+            <CardDescription>Enter your 6-digit PIN to view the protected content.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -197,6 +219,21 @@ export default function SecureLinkPage() {
           <CardFooter className="text-center text-xs text-muted-foreground">
             <p>This link is secure and tracked. Do not share the PIN.</p>
           </CardFooter>
+        </Card>
+      );
+    }
+    
+    if (emailMeta && !emailMeta.isGuest && !requiresPin) {
+      // This case should not be reached as non-database recipients are handled automatically
+      return (
+        <Card className="w-full max-w-sm shadow-2xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+              <ShieldCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            <CardTitle className="text-2xl">Loading Content</CardTitle>
+            <CardDescription>Accessing your secure content...</CardDescription>
+          </CardHeader>
         </Card>
       );
     }

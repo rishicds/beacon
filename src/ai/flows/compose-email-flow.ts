@@ -34,18 +34,26 @@ const composeEmailFlow = ai.defineFlow(
       if (input.isGuest) {
         // Guest Workflow
         const guestExpiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
-        const email = await data.emails.create({
+        const emailData: any = {
           recipient: input.recipient,
           subject: input.subject,
           body: input.body,
           secureLinkToken: token,
-          attachmentDataUri: input.attachmentDataUri,
-          attachmentFilename: input.attachmentFilename,
           companyId: input.companyId,
           senderId: input.senderId,
           expiresAt: Timestamp.fromDate(guestExpiresAt),
           isGuest: true,
-        });
+        };
+
+        // Only include attachment fields if they exist
+        if (input.attachmentDataUri) {
+          emailData.attachmentDataUri = input.attachmentDataUri;
+        }
+        if (input.attachmentFilename) {
+          emailData.attachmentFilename = input.attachmentFilename;
+        }
+
+        const email = await data.emails.create(emailData);
 
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
         const secureLink = `${baseUrl}/secure/${token}`;
@@ -79,20 +87,28 @@ const composeEmailFlow = ai.defineFlow(
           };
         }
 
-        const email = await data.emails.create({
+        const emailData: any = {
           recipient: input.recipient,
           subject: input.subject,
           body: input.body,
           secureLinkToken: token,
-          attachmentDataUri: input.attachmentDataUri,
-          attachmentFilename: input.attachmentFilename,
           companyId: input.companyId,
           senderId: input.senderId,
           expiresAt: input.linkExpires 
               ? Timestamp.fromDate(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)) 
               : null,
           isGuest: false,
-        });
+        };
+
+        // Only include attachment fields if they exist
+        if (input.attachmentDataUri) {
+          emailData.attachmentDataUri = input.attachmentDataUri;
+        }
+        if (input.attachmentFilename) {
+          emailData.attachmentFilename = input.attachmentFilename;
+        }
+
+        const email = await data.emails.create(emailData);
 
         data.beaconLogs.create({
           emailId: email.id,

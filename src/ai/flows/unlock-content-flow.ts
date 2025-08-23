@@ -60,9 +60,30 @@ const verifyPinFlow = ai.defineFlow(
       }
     }
 
-    const sender = await data.users.findById(email.senderId);
-    if (!sender || !sender.pinHash) {
-        return { success: false, error: 'Could not identify the sender or sender has not set a PIN.'}
+    // Check if recipient is in the database
+    const recipient = await data.users.findByEmail(email.recipient);
+    
+    if (!recipient) {
+        // Recipient not in database - treat as guest access (no PIN required)
+        return {
+            success: true,
+            document: {
+              title: `Confidential Document: ${email.subject}`,
+              description: email.body,
+              imageUrl: 'https://placehold.co/800x600.png',
+              imageHint: 'confidential document',
+              attachmentFilename: email.attachmentFilename,
+              attachmentDataUri: email.attachmentDataUri,
+            },
+          };
+    }
+    
+    if (!recipient.pinHash) {
+        // Recipient exists but hasn't set a PIN yet
+        return { 
+            success: false, 
+            error: 'You need to set up your PIN before accessing secure content. Please contact your administrator.' 
+        };
     }
     
     const logDetails = {
@@ -74,7 +95,7 @@ const verifyPinFlow = ai.defineFlow(
       companyId: email.companyId,
     };
 
-    const isPinValid = await bcrypt.compare(pin, sender.pinHash);
+    const isPinValid = await bcrypt.compare(pin, recipient.pinHash);
 
     if (isPinValid) {
       await data.accessLogs.create({

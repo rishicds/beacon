@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MailPlus, PanelLeft } from "lucide-react";
+import { MailPlus, PanelLeft, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +68,14 @@ export default function AppHeader({ companyName }: AppHeaderProps) {
                     <span className="sr-only">GuardianMail</span>
                     </Link>
                     {/* Add Mobile nav links here */}
+                    <Link href="/compose" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+                        <MailPlus className="h-5 w-5" />
+                        Compose Email
+                    </Link>
+                    <Link href="/settings" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+                        <Settings className="h-5 w-5" />
+                        Settings
+                    </Link>
                 </nav>
                 </SheetContent>
             </Sheet>
@@ -117,7 +125,9 @@ export default function AppHeader({ companyName }: AppHeaderProps) {
                         </DropdownMenuPortal>
                     </DropdownMenuSub>
 
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/settings">Settings</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem>Support</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>

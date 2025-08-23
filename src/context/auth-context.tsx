@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
          if (userDoc.exists()) {
             const userData = { id: userDoc.id, ...userDoc.data() } as User;
             setUser(userData);
-            // Redirect employee if PIN is not set
-            if (userData.role === 'employee' && !userData.pinSet) {
+            // Redirect any user if PIN is not set
+            if (!userData.pinSet) {
                 router.push('/set-pin');
             }
             return userData;

@@ -42,11 +42,16 @@ export default function LoginPage() {
     
     useEffect(() => {
         if (!authLoading && authUser) {
-             if (authUser.role === 'admin') {
-                router.push('/admin');
-            } else {
-                router.push('/company-dashboard');
+            // Let the auth context handle redirection based on PIN status
+            // This ensures users without PIN are sent to set-pin first
+            if (authUser.pinSet) {
+                if (authUser.role === 'admin') {
+                    router.push('/admin');
+                } else {
+                    router.push('/company-dashboard');
+                }
             }
+            // If PIN is not set, auth context will redirect to /set-pin
         }
     }, [authUser, authLoading, router])
 
