@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-context';
-
+import { Navbar } from '@/components/landing/Navbar';
 export const metadata: Metadata = {
   title: 'GuardianMail',
   description: 'Secure Email + Beacon Platform',
@@ -22,6 +22,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
+          <Navbar />
           {children}
         </AuthProvider>
         <Toaster />

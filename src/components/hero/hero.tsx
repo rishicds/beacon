@@ -11,14 +11,14 @@ import Link from "next/link";
 
 export default function HeroPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
       {/* Enhanced Header */}
      
       <main className="flex-1 relative overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-400/10 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-400/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 to-indigo-950/20" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-400/20 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-400/20 to-transparent rounded-full blur-3xl" />
 
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -33,9 +33,9 @@ export default function HeroPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="mb-8 flex justify-center"
           >
-            <div className="inline-flex items-center rounded-full border border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-6 py-2 shadow-lg shadow-slate-200/20 dark:shadow-slate-900/20">
-              <Shield className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <div className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-800/80 backdrop-blur-sm px-6 py-2 shadow-lg shadow-slate-900/20">
+              <Shield className="mr-2 h-4 w-4 text-blue-400" />
+              <span className="text-sm font-medium text-slate-300">
                 Enterprise-Grade Security Platform
               </span>
             </div>
@@ -50,10 +50,10 @@ export default function HeroPage() {
               className="space-y-6"
             >
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-                <span className="block text-slate-900 dark:text-white">
+                <span className="block text-white">
                   <TextGenerateEffect words="Secure Communication" />
                 </span>
-                <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
                   <TextGenerateEffect words="Redefined" />
                 </span>
               </h1>
@@ -62,7 +62,7 @@ export default function HeroPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
-                className="mx-auto max-w-3xl text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed"
+                className="mx-auto max-w-3xl text-lg sm:text-xl text-slate-400 leading-relaxed"
               >
                 Experience next-generation secure communication with military-grade encryption, 
                 real-time monitoring, and enterprise-scale reliability. Protect your most sensitive 
@@ -80,7 +80,7 @@ export default function HeroPage() {
               <Button 
                 asChild 
                 size="lg" 
-                className="group relative h-12 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105"
+                className="group relative h-12 px-8 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105"
               >
                 <Link href="/login" className="flex items-center">
                   <Lock className="mr-2 h-4 w-4" />
@@ -92,9 +92,9 @@ export default function HeroPage() {
                 asChild 
                 size="lg" 
                 variant="outline"
-                className="group h-12 px-8 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 shadow-lg transition-all duration-300"
+                className="group h-12 px-8 border-slate-700 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-800 shadow-lg transition-all duration-300"
               >
-                <Link href="/login" className="flex items-center text-slate-700 dark:text-slate-300">
+                <Link href="/login" className="flex items-center text-slate-300">
                   Learn More 
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
@@ -106,7 +106,7 @@ export default function HeroPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.6 }}
-              className="flex flex-wrap items-center justify-center gap-8 pt-8 text-sm text-slate-500 dark:text-slate-400"
+              className="flex flex-wrap items-center justify-center gap-8 pt-8 text-sm text-slate-400"
             >
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -130,20 +130,20 @@ export default function HeroPage() {
             transition={{ delay: 1.2, duration: 0.8 }}
             className="relative mx-auto mt-20 max-w-6xl"
           >
-            <div className="relative overflow-hidden rounded-2xl bg-white/10 dark:bg-slate-800/10 backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+            <div className="relative overflow-hidden rounded-2xl bg-slate-800/10 backdrop-blur-sm border border-slate-700/20 shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-700/5 to-transparent" />
               
               {/* Browser Header */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 dark:border-slate-700/20">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700/20">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-red-400"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                   <div className="w-3 h-3 rounded-full bg-green-400"></div>
                 </div>
                 <div className="flex-1 mx-4">
-                  <div className="h-6 bg-slate-200/50 dark:bg-slate-700/50 rounded-md flex items-center px-3">
-                    <Lock className="h-3 w-3 text-green-500 mr-2" />
-                    <span className="text-xs text-slate-600 dark:text-slate-400">app.guardianmail.com</span>
+                  <div className="h-6 bg-slate-700/50 rounded-md flex items-center px-3">
+                    <Lock className="h-3 w-3 text-green-400 mr-2" />
+                    <span className="text-xs text-slate-400">app.guardianmail.com</span>
                   </div>
                 </div>
               </div>
