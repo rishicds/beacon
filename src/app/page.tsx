@@ -7,8 +7,7 @@ export default function Page() {
   return (
     <div>
       <Navbar />
-      
-      
+      <HeroPage />
       </div>
   );
 }

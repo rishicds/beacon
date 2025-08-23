@@ -23,8 +23,12 @@ export default function SetPinPage() {
 
     // Redirect users based on their setup status
     if (user) {
-        if (!user.pinSet) {
-            // Users without PIN stay on this page for initial setup
+        if (user.setupToken) {
+            // Users with setup tokens should go through onboarding flow instead
+            router.push(`/onboarding/${user.setupToken}`);
+            return null;
+        } else if (!user.pinSet) {
+            // Users without PIN and no setup token stay on this page for PIN setup
         } else {
             // Users with PIN already set go to appropriate dashboard
             if (user.role === 'admin') {

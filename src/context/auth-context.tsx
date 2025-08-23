@@ -43,8 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
          if (userDoc.exists()) {
             const userData = { id: userDoc.id, ...userDoc.data() } as User;
             setUser(userData);
-            // Redirect any user if PIN is not set
-            if (!userData.pinSet) {
+            // Only redirect to set-pin if user doesn't have PIN AND no setup token
+            // If they have a setup token, they should go through onboarding flow
+            // Also don't redirect if already on onboarding page
+            const currentPath = window.location.pathname;
+            if (!userData.pinSet && !userData.setupToken && !currentPath.startsWith('/onboarding')) {
                 router.push('/set-pin');
             }
             return userData;

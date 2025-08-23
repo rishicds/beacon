@@ -9,7 +9,8 @@ import {
   Building,
   Users,
   Settings,
-  PlusCircle
+  PlusCircle,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { data, type Company } from "@/lib/data";
@@ -35,6 +36,17 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -91,6 +103,79 @@ function AddCompanyDialog({ onCompanyAdded }: { onCompanyAdded: () => void }) {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function DeleteCompanyDialog({ company, onCompanyDeleted }: { company: Company, onCompanyDeleted: () => void }) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [userCount, setUserCount] = useState<number | null>(null);
+    const { toast } = useToast();
+
+    const fetchUserCount = async () => {
+        try {
+            const users = await data.users.findByCompany(company.id);
+            setUserCount(users.length);
+        } catch (error) {
+            setUserCount(0);
+        }
+    };
+
+    const handleDelete = async () => {
+        setIsLoading(true);
+        try {
+            await data.companies.delete(company.id);
+            toast({ 
+                title: "Success", 
+                description: `Company "${company.name}" and all its ${userCount || 0} employee(s) have been deleted.` 
+            });
+            onCompanyDeleted();
+        } catch (error: any) {
+            toast({ variant: "destructive", title: "Error", description: error.message || "Failed to delete company." });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={fetchUserCount}
+                >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Company</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Are you sure you want to delete "{company.name}"? 
+                        {userCount !== null && (
+                            <span className="block mt-2 font-medium">
+                                This will permanently delete the company and all {userCount} employee(s), 
+                                along with their emails, logs, and alerts.
+                            </span>
+                        )}
+                        <span className="block mt-2 text-destructive font-medium">
+                            This action cannot be undone.
+                        </span>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                        onClick={handleDelete} 
+                        disabled={isLoading}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                        {isLoading ? "Deleting..." : "Delete Company"}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }
 
@@ -163,7 +248,7 @@ export default function AdminCompaniesPage() {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle>Company Management</CardTitle>
-                        <CardDescription>View and add new companies to the platform.</CardDescription>
+                        <CardDescription>View, add, and delete companies. Deleting a company will remove all associated employees and data.</CardDescription>
                     </div>
                     <AddCompanyDialog onCompanyAdded={fetchCompanies} />
                 </CardHeader>
@@ -182,7 +267,10 @@ export default function AdminCompaniesPage() {
                                     <TableCell className="font-medium">{c.name}</TableCell>
                                     <TableCell className="text-muted-foreground font-mono text-xs">{c.id}</TableCell>
                                     <TableCell>
-                                        <Button variant="outline" size="sm">Manage Users</Button>
+                                        <div className="flex gap-2">
+                                            <Button variant="outline" size="sm">Manage Users</Button>
+                                            <DeleteCompanyDialog company={c} onCompanyDeleted={fetchCompanies} />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
