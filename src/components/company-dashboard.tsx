@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,16 +13,11 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import GuardianMailLogo from "./icons/logo";
-import NaturalLanguageQuery from "./dashboard/natural-language-query";
-import SummarizedReport from "./dashboard/summarized-report";
-import ActivityLogs from "./dashboard/activity-logs";
-import RealTimeAlerts from "./dashboard/real-time-alerts";
 import BeaconTracking from "./dashboard/beacon-tracking";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { useAuth } from "@/context/auth-context";
 import { data, type User, type Company, type Email, type AccessLog, type BeaconLog, type PinResetRequest } from "@/lib/data";
 import AppHeader from "./app-header";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -37,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import RealTimeAlerts from "@/components/dashboard/real-time-alerts";
 
 
 function AddEmployeeDialog({ companyId, onEmployeeAdded }: { companyId: string, onEmployeeAdded: () => void }) {
@@ -150,6 +145,12 @@ export default function CompanyDashboard() {
   }, [user]);
   
   if (!user || !user.companyId) return null;
+  if (user.role === 'employee') {
+    if (typeof window !== 'undefined') {
+      window.location.replace('/compose');
+    }
+    return null;
+  }
   
   const suspiciousOpens = companyBeaconLogs.filter(l => l.status === 'Suspicious').length;
   const failedPinAttempts = companyAccessLogs.filter(l => l.status === 'Failed').length;
@@ -168,71 +169,75 @@ export default function CompanyDashboard() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-16 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
             href="#"
-            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+            className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
             <GuardianMailLogo className="h-5 w-5 transition-all group-hover:scale-110" />
             <span className="sr-only">GuardianMail</span>
           </Link>
-          <Link href="/company-dashboard" className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+          <Link href="/company-dashboard" className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
             <Home className="h-5 w-5" />
             <span className="sr-only">Dashboard</span>
           </Link>
           <Link
             href="#"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
           >
             <Shield className="h-5 w-5" />
             <span className="sr-only">Security</span>
           </Link>
-           {isCompanyAdmin && (
-                <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Users className="h-5 w-5" />
-                <span className="sr-only">Employees</span>
-              </Link>
-           )}
-           {isCompanyAdmin && (
-                <Link
-                href="/admin/pin-requests"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8 relative"
-              >
-                <Key className="h-5 w-5" />
-                {pendingPinRequests > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {pendingPinRequests}
-                  </span>
-                )}
-                <span className="sr-only">PIN Requests</span>
-              </Link>
-           )}
+          <Link
+            href="/company-dashboard/insights"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <span className="font-bold text-base">I</span>
+            <span className="sr-only">Insights</span>
+          </Link>
+          {isCompanyAdmin && (
+            <Link
+              href="/company-dashboard/employees"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            >
+              <Users className="h-5 w-5" />
+              <span className="sr-only">Employees</span>
+            </Link>
+          )}
+          {isCompanyAdmin && (
+            <Link
+              href="/admin/pin-requests"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8 relative"
+            >
+              <Key className="h-5 w-5" />
+              {pendingPinRequests > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {pendingPinRequests}
+                </span>
+              )}
+              <span className="sr-only">PIN Requests</span>
+            </Link>
+          )}
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
             href="/settings"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
           >
             <Settings className="h-5 w-5" />
             <span className="sr-only">Settings</span>
           </Link>
         </nav>
       </aside>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-16">
         <AppHeader companyName={company?.name} />
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+        <main className="grid flex-1 items-start gap-4 p-2 sm:px-4 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-                <NaturalLanguageQuery />
+            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1">
                 <BeaconTracking companyId={user.companyId} isAdmin={false} />
-                <SummarizedReport />
             </div>
             <RealTimeAlerts />
-            <ActivityLogs />
           </div>
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
              <Card className="shadow-lg">
@@ -264,40 +269,6 @@ export default function CompanyDashboard() {
                     )}
                 </CardContent>
              </Card>
-             {isCompanyAdmin && (
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Employee Management</CardTitle>
-                        <CardDescription>Add or remove employees from your company.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                             {teamMembers.length > 0 ? teamMembers.map(employee => (
-                                <div key={employee.id} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-9 w-9">
-                                            <AvatarImage src={employee.avatarUrl} alt={employee.name} />
-                                            <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-medium">{employee.name}</p>
-                                            <p className="text-sm text-muted-foreground">{employee.email}</p>
-                                        </div>
-                                    </div>
-                                     {employee.role === 'employee' && (
-                                        <Button variant="ghost" size="icon" onClick={() => handleRemoveEmployee(employee.id)}>
-                                            <Trash2 className="h-4 w-4 text-destructive"/>
-                                        </Button>
-                                     )}
-                                </div>
-                            )) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">No other employees in this company.</p>
-                            )}
-                        </div>
-                        <AddEmployeeDialog companyId={user.companyId} onEmployeeAdded={fetchData} />
-                    </CardContent>
-                 </Card>
-             )}
           </div>
         </main>
       </div>

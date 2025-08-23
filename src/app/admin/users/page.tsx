@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import {
   Settings,
   UserPlus,
   RefreshCcw,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { data, type User, type Company } from "@/lib/data";
@@ -152,6 +152,17 @@ export default function AdminUsersPage() {
         }
     }
 
+    const handleDeleteUser = async (userId: string, userName: string) => {
+        if (!window.confirm(`Are you sure you want to delete user '${userName}'?`)) return;
+        try {
+            await data.users.delete(userId);
+            toast({ title: "User Deleted", description: `User '${userName}' has been deleted.` });
+            fetchData();
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Failed to delete user." });
+        }
+    }
+
 
     if (loading) {
         return <div>Loading...</div>;
@@ -259,6 +270,17 @@ export default function AdminUsersPage() {
                                             <Button variant="outline" size="sm" onClick={() => handleResetPin(u.id)}>
                                                 <RefreshCcw className="mr-2 h-4 w-4" />
                                                 Reset PIN
+                                            </Button>
+                                        )}
+                                        {u.role !== 'admin' && (
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="ml-2 flex items-center gap-1"
+                                                title="Delete user"
+                                                onClick={() => handleDeleteUser(u.id, u.name || u.email)}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-1" /> Delete
                                             </Button>
                                         )}
                                     </TableCell>

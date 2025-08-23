@@ -196,16 +196,22 @@ export const data = {
                 <p><a href="${onboardingLink}">Complete Your Account Setup</a></p>
                 <p>If you did not request this, please ignore this email.</p>
             `;
-            
-             await composeAndSendEmail({
-                recipient: userData.email,
-                subject: "Welcome to GuardianMail - Complete Your Onboarding",
-                body: emailBody,
-                companyId: 'SYSTEM', 
-                senderId: 'SYSTEM',
-                linkExpires: false,
-                isGuest: false,
-            });
+            // --- Robust error handling for onboarding email ---
+            try {
+                await composeAndSendEmail({
+                    recipient: userData.email,
+                    subject: "Welcome to GuardianMail - Complete Your Onboarding",
+                    body: emailBody,
+                    companyId: 'SYSTEM', 
+                    senderId: 'SYSTEM',
+                    linkExpires: false,
+                    isGuest: false,
+                });
+            } catch (emailError) {
+                // Optionally: Rollback user creation if email fails, or just log and surface error
+                console.error("Onboarding email failed to send:", emailError);
+                throw new Error("Employee created, but onboarding email failed to send. Please check email configuration.");
+            }
 
             return { id: authUser.uid, ...newUser };
         } catch (error) {
