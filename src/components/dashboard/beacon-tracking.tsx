@@ -12,8 +12,6 @@ import {
     Smartphone, 
     Monitor, 
     Chrome,
-    Firefox,
-    Safari,
     MapPin,
     Clock,
     TrendingUp,
@@ -84,9 +82,11 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
             case 'chrome':
                 return <Chrome className="h-4 w-4" />;
             case 'firefox':
-                return <Firefox className="h-4 w-4" />;
+                // No Firefox icon in lucide-react, use Globe as fallback
+                return <Globe className="h-4 w-4" />;
             case 'safari':
-                return <Safari className="h-4 w-4" />;
+                // No Safari icon in lucide-react, use Globe as fallback
+                return <Globe className="h-4 w-4" />;
             default:
                 return <Globe className="h-4 w-4" />;
         }
