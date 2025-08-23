@@ -13,7 +13,11 @@ importers:
         version: 1.17.0(genkit@1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1))
       '@genkit-ai/next':
         specifier: ^1.14.1
+<<<<<<< HEAD
         version: 1.17.0(genkit@1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1))(next@15.3.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(zod@3.25.76)
+=======
+        version: 1.17.0(genkit@1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1))(next@15.3.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(zod@3.25.67)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
       '@hookform/resolvers':
         specifier: ^4.1.3
         version: 4.1.3(react-hook-form@7.62.0(react@18.3.1))
@@ -104,6 +108,12 @@ importers:
       firebase-admin:
         specifier: ^12.1.1
         version: 12.7.0
+<<<<<<< HEAD
+=======
+      framer-motion:
+        specifier: ^12.23.12
+        version: 12.23.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
       genkit:
         specifier: ^1.14.1
         version: 1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1)
@@ -142,7 +152,11 @@ importers:
         version: 1.0.7(tailwindcss@3.4.17)
       zod:
         specifier: ^3.24.2
+<<<<<<< HEAD
         version: 3.25.76
+=======
+        version: 3.25.67
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
     devDependencies:
       '@types/bcryptjs':
         specifier: ^2.4.6
@@ -3198,6 +3212,23 @@ packages:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
 
+<<<<<<< HEAD
+=======
+  framer-motion@12.23.12:
+    resolution: {integrity: sha512-6e78rdVtnBvlEVgu6eFEAgG9v3wLnYEboM8I5O5EXvfKC8gxGQB8wXJdhkMy10iVcn05jl6CNw7/HTsTCfwcWg==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
     engines: {node: '>= 0.6'}
@@ -3717,6 +3748,15 @@ packages:
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
 
+<<<<<<< HEAD
+=======
+  motion-dom@12.23.12:
+    resolution: {integrity: sha512-RcR4fvMCTESQBD/uKQe49D5RUeDOokkGRmz4ceaJKDBgHYtZtntC/s2vLvY38gqGaytinij/yi3hMcWVcEF5Kw==}
+
+  motion-utils@12.23.6:
+    resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
+
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
   ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
 
@@ -4649,17 +4689,29 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
+<<<<<<< HEAD
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+=======
+  zod@3.25.67:
+    resolution: {integrity: sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==}
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
 
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
+<<<<<<< HEAD
   '@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76)':
     dependencies:
       openapi3-ts: 4.5.0
       zod: 3.25.76
+=======
+  '@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.67)':
+    dependencies:
+      openapi3-ts: 4.5.0
+      zod: 3.25.67
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
 
   '@aws-crypto/sha256-browser@5.2.0':
     dependencies:
@@ -5486,8 +5538,13 @@ snapshots:
       express: 4.21.2
       get-port: 5.1.1
       json-schema: 0.4.0
+<<<<<<< HEAD
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
+=======
+      zod: 3.25.67
+      zod-to-json-schema: 3.24.6(zod@3.25.67)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
     optionalDependencies:
       '@genkit-ai/firebase': 1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1)(genkit@1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1))
     transitivePeerDependencies:
@@ -5546,6 +5603,7 @@ snapshots:
       - encoding
       - supports-color
 
+<<<<<<< HEAD
   '@genkit-ai/next@1.17.0(genkit@1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1))(next@15.3.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(zod@3.25.76)':
     dependencies:
       genkit: 1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1)
@@ -5555,6 +5613,17 @@ snapshots:
   '@genkit-ai/telemetry-server@1.17.0(@types/node@20.19.11)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.76)
+=======
+  '@genkit-ai/next@1.17.0(genkit@1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1))(next@15.3.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(zod@3.25.67)':
+    dependencies:
+      genkit: 1.17.0(@google-cloud/firestore@7.11.3)(firebase-admin@12.7.0)(firebase@10.14.1)
+      next: 15.3.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      zod: 3.25.67
+
+  '@genkit-ai/telemetry-server@1.17.0(@types/node@20.19.11)':
+    dependencies:
+      '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.67)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
       '@genkit-ai/tools-common': 1.17.0(@types/node@20.19.11)
       '@google-cloud/firestore': 7.11.3
       '@opentelemetry/api': 1.9.0
@@ -5566,7 +5635,11 @@ snapshots:
       async-mutex: 0.5.0
       express: 4.21.2
       lockfile: 1.0.4
+<<<<<<< HEAD
       zod: 3.25.76
+=======
+      zod: 3.25.67
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
     transitivePeerDependencies:
       - '@types/node'
       - debug
@@ -5575,7 +5648,11 @@ snapshots:
 
   '@genkit-ai/tools-common@1.17.0(@types/node@20.19.11)':
     dependencies:
+<<<<<<< HEAD
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.76)
+=======
+      '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.67)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
       '@inquirer/prompts': 7.8.3(@types/node@20.19.11)
       '@trpc/server': 10.45.2
       adm-zip: 0.5.16
@@ -5598,8 +5675,13 @@ snapshots:
       uuid: 9.0.1
       winston: 3.17.0
       yaml: 2.8.1
+<<<<<<< HEAD
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
+=======
+      zod: 3.25.67
+      zod-to-json-schema: 3.24.6(zod@3.25.67)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
     transitivePeerDependencies:
       - '@types/node'
       - debug
@@ -6017,8 +6099,13 @@ snapshots:
       express-rate-limit: 7.5.1(express@5.1.0)
       pkce-challenge: 5.0.0
       raw-body: 3.0.0
+<<<<<<< HEAD
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
+=======
+      zod: 3.25.67
+      zod-to-json-schema: 3.24.6(zod@3.25.67)
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
     transitivePeerDependencies:
       - supports-color
 
@@ -8639,6 +8726,18 @@ snapshots:
 
   forwarded@0.2.0: {}
 
+<<<<<<< HEAD
+=======
+  framer-motion@12.23.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      motion-dom: 12.23.12
+      motion-utils: 12.23.6
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
   fresh@0.5.2: {}
 
   fresh@2.0.0: {}
@@ -9218,6 +9317,15 @@ snapshots:
 
   module-details-from-path@1.0.4: {}
 
+<<<<<<< HEAD
+=======
+  motion-dom@12.23.12:
+    dependencies:
+      motion-utils: 12.23.6
+
+  motion-utils@12.23.6: {}
+
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
   ms@2.0.0: {}
 
   ms@2.1.3: {}
@@ -10227,8 +10335,16 @@ snapshots:
 
   yoctocolors-cjs@2.1.3: {}
 
+<<<<<<< HEAD
   zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
       zod: 3.25.76
 
   zod@3.25.76: {}
+=======
+  zod-to-json-schema@3.24.6(zod@3.25.67):
+    dependencies:
+      zod: 3.25.67
+
+  zod@3.25.67: {}
+>>>>>>> 48c88f6edd470e88eacd124ef705f498105a71da
