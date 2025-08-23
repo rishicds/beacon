@@ -422,86 +422,70 @@ export default function EmailDetailPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Status</TableHead>
-                          <TableHead>Device Info</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>IP Address</TableHead>
+                          <TableHead>Device</TableHead>
+                          <TableHead>Browser</TableHead>
+                          <TableHead>OS</TableHead>
+                          <TableHead>Timezone</TableHead>
+                          <TableHead>Screen</TableHead>
+                          <TableHead>Lat/Lng</TableHead>
+                          <TableHead>Accuracy</TableHead>
+                          <TableHead>IP</TableHead>
                           <TableHead>Timestamp</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {email.beaconLogs.map((log, index) => {
                           const firstLog = email.beaconLogs[email.beaconLogs.length - 1]; // Oldest first
+                          let suspiciousReasons: string[] = [];
                           const isSuspicious = index > 0 && (
-                            log.ip !== firstLog?.ip || 
-                            log.device !== firstLog?.device || 
-                            log.userAgent !== firstLog?.userAgent
+                            (log.ip !== firstLog?.ip && suspiciousReasons.push(`IP changed: ${firstLog?.ip} → ${log.ip}`)) |
+                            (log.device !== firstLog?.device && suspiciousReasons.push(`Device changed: ${firstLog?.device} → ${log.device}`)) |
+                            (log.userAgent !== firstLog?.userAgent && suspiciousReasons.push('User agent changed'))
                           );
-                          
+                          let location = {};
+                          try {
+                            location = typeof log.location === 'string' ? JSON.parse(log.location) : log.location || {};
+                          } catch {
+                            location = {};
+                          }
                           return (
                             <TableRow key={log.$id} className={isSuspicious ? "bg-red-50 dark:bg-red-950/20" : ""}>
                               <TableCell>
                                 {isSuspicious ? (
-                                  <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                                  <Badge variant="destructive" className="flex items-center gap-1 w-fit" title={suspiciousReasons.join('; ') || 'Suspicious activity detected'}>
                                     <AlertTriangle className="h-3 w-3" />
                                     Suspicious
                                   </Badge>
                                 ) : (
-                                  <Badge variant="default" className="flex items-center gap-1 w-fit">
+                                  <Badge variant="default" className="flex items-center gap-1 w-fit" title="All parameters match the first open (IP, device, user agent)">
                                     <CheckCircle className="h-3 w-3" />
                                     Normal
                                   </Badge>
                                 )}
                               </TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Monitor className="h-4 w-4 text-muted-foreground" />
-                                  {log.device} • {log.browser} • {log.os}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {log.userAgent}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-muted-foreground" />
-                                <div>
-                                  <div className="text-sm">
-                                    {(() => {
-                                      try {
-                                        const location = typeof log.location === 'string' 
-                                          ? JSON.parse(log.location) 
-                                          : log.location;
-                                        return `${location?.city || 'Unknown'}, ${location?.country || 'Unknown'}`;
-                                      } catch {
-                                        return 'Unknown';
-                                      }
-                                    })()}
-                                  </div>
-                                  {(() => {
-                                    try {
-                                      const location = typeof log.location === 'string' 
-                                        ? JSON.parse(log.location) 
-                                        : log.location;
-                                      return location?.region && (
-                                        <div className="text-xs text-muted-foreground">
-                                          {location.region}
-                                        </div>
-                                      );
-                                    } catch {
-                                      return null;
-                                    }
-                                  })()}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-mono text-sm">{log.ip}</div>
-                            </TableCell>
-                            <TableCell>{formatDateShort(log.timestamp)}</TableCell>
-                          </TableRow>
-                        );
+                              <TableCell>{log.device || 'N/A'}</TableCell>
+                              <TableCell>
+                                <span title={log.userAgent || ''} className="cursor-help underline decoration-dotted">
+                                  {log.browser || 'N/A'}
+                                </span>
+                              </TableCell>
+                              <TableCell>{log.os || 'N/A'}</TableCell>
+                              <TableCell>{log.timezone || location.timezone || 'N/A'}</TableCell>
+                              <TableCell>{log.screenResolution || 'N/A'}</TableCell>
+                              <TableCell>
+                                {typeof location.latitude === 'number' && typeof location.longitude === 'number'
+                                  ? `${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
+                                  : 'N/A'}
+                              </TableCell>
+                              <TableCell>
+                                {typeof location.accuracy === 'number' ? `${location.accuracy}m` : 'N/A'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-mono text-sm">{log.ip}</div>
+                              </TableCell>
+                              <TableCell>{formatDateShort(log.timestamp)}</TableCell>
+                            </TableRow>
+                          );
                         })}
                       </TableBody>
                     </Table>
@@ -533,44 +517,89 @@ export default function EmailDetailPage() {
                 <CardContent>
                   {email.accessLogs.length > 0 ? (
                     <div className="space-y-4">
-                      {email.accessLogs.map((log) => (
-                        <div key={log.id} className="border-b pb-4 last:border-b-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge 
-                              variant={log.status === 'Success' ? 'default' : 'destructive'}
-                              className="flex items-center gap-1"
-                            >
-                              {log.status === 'Success' ? (
-                                <CheckCircle className="h-3 w-3" />
-                              ) : (
-                                <XCircle className="h-3 w-3" />
-                              )}
-                              {log.status}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDateShort(log.timestamp)}
-                            </span>
+                      {email.accessLogs.map((log) => {
+                        // Find the closest beacon log by timestamp and emailId
+                        let matchedBeacon = null;
+                        if (email.beaconLogs && email.beaconLogs.length > 0) {
+                          const logTime = new Date(typeof log.timestamp === 'string' ? log.timestamp : log.timestamp.toDate());
+                          matchedBeacon = email.beaconLogs
+                            .filter(b => b.emailId === log.emailId)
+                            .map(b => ({
+                              ...b,
+                              beaconTime: new Date(typeof b.timestamp === 'string' ? b.timestamp : b.timestamp.toDate())
+                            }))
+                            .sort((a, b) => Math.abs(a.beaconTime - logTime) - Math.abs(b.beaconTime - logTime))[0];
+                        }
+                        let location = {};
+                        try {
+                          location = matchedBeacon && matchedBeacon.location ?
+                            (typeof matchedBeacon.location === 'string' ? JSON.parse(matchedBeacon.location) : matchedBeacon.location) : {};
+                        } catch {
+                          location = {};
+                        }
+                        return (
+                          <div key={log.id} className="border-b pb-4 last:border-b-0">
+                            <div className="flex items-start justify-between mb-2">
+                              <Badge 
+                                variant={log.status === 'Success' ? 'default' : 'destructive'}
+                                className="flex items-center gap-1"
+                              >
+                                {log.status === 'Success' ? (
+                                  <CheckCircle className="h-3 w-3" />
+                                ) : (
+                                  <XCircle className="h-3 w-3" />
+                                )}
+                                {log.status}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDateShort(log.timestamp)}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 text-sm">
+                                <UserIcon className="h-3 w-3 text-muted-foreground" />
+                                {log.user}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Mail className="h-3 w-3 text-muted-foreground" />
+                                {log.email}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <MapPin className="h-3 w-3 text-muted-foreground" />
+                                {log.ip}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Monitor className="h-3 w-3 text-muted-foreground" />
+                                {matchedBeacon?.os || log.os || 'N/A'}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-semibold">Browser:</span>
+                                <span title={matchedBeacon?.userAgent || ''} className="cursor-help underline decoration-dotted">{matchedBeacon?.browser || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-semibold">OS:</span>
+                                <span>{matchedBeacon?.os || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-semibold">Timezone:</span>
+                                <span>{matchedBeacon?.timezone || location.timezone || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-semibold">Screen:</span>
+                                <span>{matchedBeacon?.screenResolution || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-semibold">Lat/Lng:</span>
+                                <span>{typeof location.latitude === 'number' && typeof location.longitude === 'number' ? `${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}` : 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-semibold">Accuracy:</span>
+                                <span>{typeof location.accuracy === 'number' ? `${location.accuracy}m` : 'N/A'}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm">
-                              <UserIcon className="h-3 w-3 text-muted-foreground" />
-                              {log.user}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Mail className="h-3 w-3 text-muted-foreground" />
-                              {log.email}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <MapPin className="h-3 w-3 text-muted-foreground" />
-                              {log.ip}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Monitor className="h-3 w-3 text-muted-foreground" />
-                              {log.device}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8">

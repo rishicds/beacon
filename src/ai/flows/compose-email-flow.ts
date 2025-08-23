@@ -63,7 +63,6 @@ const composeEmailFlow = ai.defineFlow({
           <p><strong>Secure Link:</strong> <a href="${secureLink}">${secureLink}</a></p>
           <br/>
           <p><strong>Important:</strong> Click the secure link above to access the confidential content.</p>
-          <img src="${beaconUrl}" width="1" height="1" style="display:none;" alt="" />
         `;
 
         await sendEmail(
@@ -121,7 +120,6 @@ const composeEmailFlow = ai.defineFlow({
           <p><strong>Important:</strong> You will need to enter your confidential PIN after clicking the link.</p>
           <br/>
           <p><strong>Note:</strong> The confidential content will only be visible after clicking the secure link and entering your PIN.</p>
-          <img src="${beaconUrl}" width="1" height="1" style="display:none;" alt="" />
         `;
 
         await sendEmail(

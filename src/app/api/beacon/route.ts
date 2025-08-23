@@ -323,8 +323,24 @@ export async function POST(request: NextRequest) {
         // Parse user agent
         const { device, browser, os } = parseUserAgent(userAgent);
 
-        // Get location from IP
-        const location = await getLocationFromIP(ip);
+        // Prefer client-supplied geolocation if present, else use IP-based geolocation
+        let location = null;
+        if (
+            typeof trackingData.latitude === 'number' &&
+            typeof trackingData.longitude === 'number'
+        ) {
+            location = {
+                latitude: trackingData.latitude,
+                longitude: trackingData.longitude,
+                accuracy: trackingData.accuracy || null,
+                // Optionally, you can reverse geocode here if you want city/country
+                source: 'client',
+            };
+        } else {
+            // Fallback to IP-based geolocation
+            const ipLocation = await getLocationFromIP(ip);
+            location = { ...ipLocation, source: 'ip' };
+        }
 
         // Prepare beacon data
         const beaconData = {
@@ -369,7 +385,7 @@ export async function POST(request: NextRequest) {
                 device: device,
                 browser: browser,
                 os: os,
-                location: location.city + ', ' + location.country,
+                location: location,
                 timestamp: beaconData.timestamp
             }
         });
