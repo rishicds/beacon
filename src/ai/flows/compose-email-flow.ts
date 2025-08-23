@@ -64,9 +64,7 @@ const composeEmailFlow = ai.defineFlow(
             <p>You can view the document by clicking the secure link below. This link will expire in 24 hours.</p>
             <p><strong>Secure Link:</strong> <a href="${secureLink}">${secureLink}</a></p>
             <br/>
-            <p>Original message content:</p>
-            <hr/>
-            <div>${input.body}</div>
+            <p><strong>Important:</strong> Click the secure link above to access the confidential content.</p>
           `;
 
         await sendEmail(input.recipient, `[Secure] ${input.subject}`, emailHtml, input.attachmentDataUri, input.attachmentFilename);
@@ -129,9 +127,7 @@ const composeEmailFlow = ai.defineFlow(
             <p><strong>Secure Link:</strong> <a href="${secureLink}">${secureLink}</a></p>
             <p><strong>Important:</strong> You will need to enter the sender's confidential PIN after clicking the link.</p>
             <br/>
-            <p>Original message content:</p>
-            <hr/>
-            <div>${input.body}</div>
+            <p><strong>Note:</strong> The confidential content will only be visible after clicking the secure link and entering your PIN.</p>
           `;
           
           await sendEmail(input.recipient, `[Secure] ${input.subject}`, emailHtml, input.attachmentDataUri, input.attachmentFilename);
