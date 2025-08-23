@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
         const client = createServerClient();
         const databases = new Databases(client);
         
-        const databaseId = process.env.APPWRITE_DATABASE_ID || 'email_beacon_db';
-        const collectionId = process.env.APPWRITE_BEACON_COLLECTION_ID || 'beacon_logs';
+        const databaseId = process.env.APPWRITE_DATABASE_ID || process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'email_beacon_db';
+        const collectionId = process.env.APPWRITE_BEACON_COLLECTION_ID || process.env.NEXT_PUBLIC_APPWRITE_BEACON_COLLECTION_ID || 'beacon_logs';
 
         try {
             const document = await databases.createDocument(
@@ -349,8 +349,8 @@ export async function POST(request: NextRequest) {
         const client = createServerClient();
         const databases = new Databases(client);
         
-        const databaseId = process.env.APPWRITE_DATABASE_ID || 'email_beacon_db';
-        const collectionId = process.env.APPWRITE_BEACON_COLLECTION_ID || 'beacon_logs';
+        const databaseId = process.env.APPWRITE_DATABASE_ID || process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'email_beacon_db';
+        const collectionId = process.env.APPWRITE_BEACON_COLLECTION_ID || process.env.NEXT_PUBLIC_APPWRITE_BEACON_COLLECTION_ID || 'beacon_logs';
 
         const document = await databases.createDocument(
             databaseId,
