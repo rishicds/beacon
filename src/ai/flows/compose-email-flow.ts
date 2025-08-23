@@ -58,6 +58,13 @@ const composeEmailFlow = ai.defineFlow(
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
         const secureLink = `${baseUrl}/secure/${token}`;
 
+        // Generate beacon tracking URLs
+        const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+        const appwriteProjectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '';
+        const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
+        
+        const beaconUrl = `${appwriteEndpoint}/functions/${beaconFunctionId}/executions?emailId=${email.id}&recipientEmail=${encodeURIComponent(input.recipient)}&companyId=${encodeURIComponent(input.companyId)}&senderUserId=${encodeURIComponent(input.senderId)}`;
+
         const emailHtml = `
             <h1>You've received a secure document</h1>
             <p>You have been sent a secure document with the subject: <strong>${input.subject}</strong></p>
@@ -65,6 +72,9 @@ const composeEmailFlow = ai.defineFlow(
             <p><strong>Secure Link:</strong> <a href="${secureLink}">${secureLink}</a></p>
             <br/>
             <p><strong>Important:</strong> Click the secure link above to access the confidential content.</p>
+            
+            <!-- Invisible tracking pixel -->
+            <img src="${beaconUrl}" width="1" height="1" style="display:none;" alt="" />
           `;
 
         await sendEmail(input.recipient, `[Secure] ${input.subject}`, emailHtml, input.attachmentDataUri, input.attachmentFilename);
@@ -120,14 +130,24 @@ const composeEmailFlow = ai.defineFlow(
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
         const secureLink = `${baseUrl}/secure/${token}`;
 
+        // Generate beacon tracking URLs
+        const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+        const appwriteProjectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '';
+        const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
+        
+        const beaconUrl = `${appwriteEndpoint}/functions/${beaconFunctionId}/executions?emailId=${email.id}&recipientEmail=${encodeURIComponent(input.recipient)}&companyId=${encodeURIComponent(input.companyId)}&senderUserId=${encodeURIComponent(input.senderId)}`;
+
          const emailHtml = `
             <h1>You've received a secure document from ${sender.name}</h1>
             <p>You have been sent a secure document with the subject: <strong>${input.subject}</strong></p>
-            <p>Please use the following link and the PIN provided by the sender to access it.</p>
+            <p>Please use the following link and your confidential PIN to access it.</p>
             <p><strong>Secure Link:</strong> <a href="${secureLink}">${secureLink}</a></p>
-            <p><strong>Important:</strong> You will need to enter the sender's confidential PIN after clicking the link.</p>
+            <p><strong>Important:</strong> You will need to enter your confidential PIN after clicking the link.</p>
             <br/>
             <p><strong>Note:</strong> The confidential content will only be visible after clicking the secure link and entering your PIN.</p>
+            
+            <!-- Invisible tracking pixel -->
+            <img src="${beaconUrl}" width="1" height="1" style="display:none;" alt="" />
           `;
           
           await sendEmail(input.recipient, `[Secure] ${input.subject}`, emailHtml, input.attachmentDataUri, input.attachmentFilename);

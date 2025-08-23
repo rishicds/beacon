@@ -76,12 +76,27 @@ export interface Alert {
     incidentReport?: string;
 }
 
+export interface PinResetRequest {
+    id: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    companyId: string;
+    reason: string;
+    status: 'pending' | 'approved' | 'rejected';
+    requestedAt: Timestamp;
+    reviewedAt?: Timestamp;
+    reviewedBy?: string;
+    reviewerName?: string;
+}
+
 const usersCollection = collection(db, 'users');
 const companiesCollection = collection(db, 'companies');
 const emailsCollection = collection(db, 'emails');
 const accessLogsCollection = collection(db, 'accessLogs');
 const beaconLogsCollection = collection(db, 'beaconLogs');
 const alertsCollection = collection(db, 'alerts');
+const pinResetRequestsCollection = collection(db, 'pinResetRequests');
 
 
 export const data = {
@@ -411,6 +426,36 @@ export const data = {
         const snapshot = await getDocs(q);
         return !snapshot.empty;
       }
+  },
+  pinResetRequests: {
+    create: async (requestData: Omit<PinResetRequest, 'id' | 'requestedAt'>): Promise<PinResetRequest> => {
+        const newRequest = {
+            ...requestData,
+            requestedAt: Timestamp.now(),
+            status: 'pending' as const,
+        };
+        const docRef = await addDoc(pinResetRequestsCollection, newRequest);
+        return { id: docRef.id, ...newRequest } as PinResetRequest;
+    },
+    list: async (filters?: { companyId?: string }): Promise<PinResetRequest[]> => {
+        const q = filters?.companyId
+            ? query(pinResetRequestsCollection, where("companyId", "==", filters.companyId), orderBy("requestedAt", "desc"))
+            : query(pinResetRequestsCollection, orderBy("requestedAt", "desc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PinResetRequest));
+    },
+    findById: async (id: string): Promise<PinResetRequest | undefined> => {
+        const docRef = doc(db, "pinResetRequests", id);
+        const docSnap = await getDoc(docRef);
+        return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as PinResetRequest : undefined;
+    },
+    update: async (id: string, requestData: Partial<Omit<PinResetRequest, 'id'>>): Promise<void> => {
+        const requestRef = doc(db, 'pinResetRequests', id);
+        await updateDoc(requestRef, requestData);
+    },
+    delete: async (id: string): Promise<void> => {
+        await deleteDoc(doc(db, "pinResetRequests", id));
+    }
   },
   getAllLogs: async (companyId?: string): Promise<string> => {
     const accessLogs = await data.accessLogs.list({ companyId });

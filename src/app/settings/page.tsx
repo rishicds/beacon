@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LockKeyhole, ArrowLeft, Settings, Shield, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +24,8 @@ export default function SettingsPage() {
     const [confirmPin, setConfirmPin] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showPinSection, setShowPinSection] = useState(false);
+    const [showPinRequestSection, setShowPinRequestSection] = useState(false);
+    const [pinRequestReason, setPinRequestReason] = useState("");
 
     if (loading) {
         return (
@@ -137,6 +140,38 @@ export default function SettingsPage() {
         }
     };
 
+    const handlePinRequest = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user || !user.companyId) {
+            toast({ variant: "destructive", title: "Error", description: "Missing user information." });
+            return;
+        }
+
+        if (pinRequestReason.trim().length < 10) {
+            toast({ variant: "destructive", title: "Invalid Reason", description: "Please provide a detailed reason (at least 10 characters)." });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await data.pinResetRequests.create({
+                userId: user.id,
+                userName: user.name,
+                userEmail: user.email,
+                companyId: user.companyId,
+                reason: pinRequestReason.trim(),
+                status: 'pending',
+            });
+            toast({ title: "Request Submitted", description: "Your PIN change request has been submitted for admin approval." });
+            setPinRequestReason("");
+            setShowPinRequestSection(false);
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Failed to submit PIN change request. Please try again." });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="flex min-h-screen flex-col bg-muted/40">
             <AppHeader />
@@ -205,7 +240,7 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        {user.pinSet && (
+                                        {user.role !== 'employee' && user.pinSet && (
                                             <Button 
                                                 variant="outline" 
                                                 onClick={handleResetPin}
@@ -214,12 +249,21 @@ export default function SettingsPage() {
                                                 Reset PIN
                                             </Button>
                                         )}
-                                        <Button 
-                                            onClick={() => setShowPinSection(!showPinSection)}
-                                            disabled={isLoading}
-                                        >
-                                            {user.pinSet ? "Change PIN" : "Set PIN"}
-                                        </Button>
+                                        {user.role === 'employee' ? (
+                                            <Button 
+                                                onClick={() => setShowPinRequestSection(!showPinRequestSection)}
+                                                disabled={isLoading}
+                                            >
+                                                Request PIN Change
+                                            </Button>
+                                        ) : (
+                                            <Button 
+                                                onClick={() => setShowPinSection(!showPinSection)}
+                                                disabled={isLoading}
+                                            >
+                                                {user.pinSet ? "Change PIN" : "Set PIN"}
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -295,6 +339,54 @@ export default function SettingsPage() {
                                                         className="flex-1"
                                                     >
                                                         {isLoading ? "Saving..." : user.pinSet ? "Update PIN" : "Set PIN"}
+                                                    </Button>
+                                                </div>
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {showPinRequestSection && user.role === 'employee' && (
+                                    <Card className="border-primary/20">
+                                        <CardHeader>
+                                            <CardTitle className="text-lg">Request PIN Change</CardTitle>
+                                            <CardDescription>
+                                                Please provide a reason for the PIN change request. This will be sent to your admin for approval.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={handlePinRequest} className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="pinRequestReason">Reason for PIN Change</Label>
+                                                    <Textarea
+                                                        id="pinRequestReason"
+                                                        value={pinRequestReason}
+                                                        onChange={e => setPinRequestReason(e.target.value)}
+                                                        required
+                                                        maxLength={250}
+                                                        className="text-sm min-h-[80px]"
+                                                        placeholder="Please provide a detailed reason for your PIN change request..."
+                                                    />
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {pinRequestReason.length}/250 characters (minimum 10 required)
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="outline" 
+                                                        onClick={() => setShowPinRequestSection(false)}
+                                                        disabled={isLoading}
+                                                        className="flex-1"
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                    <Button 
+                                                        type="submit" 
+                                                        disabled={isLoading}
+                                                        className="flex-1"
+                                                    >
+                                                        {isLoading ? "Submitting..." : "Submit Request"}
                                                     </Button>
                                                 </div>
                                             </form>

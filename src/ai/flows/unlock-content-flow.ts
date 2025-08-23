@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -34,7 +33,7 @@ const verifyPinFlow = ai.defineFlow(
     }
 
     if (email.revoked) {
-        return { success: false, error: 'This secure link has been revoked by the sender.' };
+        return { success: false, error: 'This secure link has been disabled due to suspicious activity (multiple device/location opens). Please contact your administrator.' };
     }
 
     if (email.expiresAt && (email.expiresAt as Timestamp).toDate() < new Date()) {

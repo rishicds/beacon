@@ -1,0 +1,16 @@
+{
+    "name": "beacon-tracker",
+    "version": "1.0.0",
+    "description": "Email beacon tracking function for GuardianMail",
+    "main": "src/main.js",
+    "scripts": {
+        "build": "echo 'Build complete'",
+        "start": "node src/main.js"
+    },
+    "dependencies": {
+        "node-appwrite": "^17.2.0",
+        "node-fetch": "^3.3.2"
+    },
+    "author": "GuardianMail",
+    "license": "MIT"
+}

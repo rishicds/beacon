@@ -9,6 +9,7 @@ import {
   Settings,
   PlusCircle,
   Mail,
+  Key,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import NaturalLanguageQuery from "./dashboard/natural-language-query";
 import SummarizedReport from "./dashboard/summarized-report";
 import ActivityLogs from "./dashboard/activity-logs";
 import RealTimeAlerts from "./dashboard/real-time-alerts";
+import BeaconTracking from "./dashboard/beacon-tracking";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./ui/card";
 import { data, type Company, type User, type Email } from "@/lib/data";
 import AppHeader from "./app-header";
@@ -76,6 +78,13 @@ export default function AdminDashboard() {
             <Mail className="h-5 w-5" />
             <span className="sr-only">All Emails</span>
           </Link>
+          <Link
+            href="/admin/pin-requests"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <Key className="h-5 w-5" />
+            <span className="sr-only">PIN Requests</span>
+          </Link>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
@@ -123,6 +132,7 @@ export default function AdminDashboard() {
                  </Card>
              </div>
             <NaturalLanguageQuery />
+            <BeaconTracking isAdmin={true} />
             <SummarizedReport />
             <RealTimeAlerts />
             <ActivityLogs />

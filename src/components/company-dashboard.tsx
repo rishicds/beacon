@@ -8,7 +8,8 @@ import {
   Users,
   UserPlus,
   Trash2,
-  Settings
+  Settings,
+  Key,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,9 +18,10 @@ import NaturalLanguageQuery from "./dashboard/natural-language-query";
 import SummarizedReport from "./dashboard/summarized-report";
 import ActivityLogs from "./dashboard/activity-logs";
 import RealTimeAlerts from "./dashboard/real-time-alerts";
+import BeaconTracking from "./dashboard/beacon-tracking";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./ui/card";
 import { useAuth } from "@/context/auth-context";
-import { data, type User, type Company, type Email, type AccessLog, type BeaconLog } from "@/lib/data";
+import { data, type User, type Company, type Email, type AccessLog, type BeaconLog, type PinResetRequest } from "@/lib/data";
 import AppHeader from "./app-header";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -112,6 +114,7 @@ export default function CompanyDashboard() {
   const [companyEmails, setCompanyEmails] = useState<Email[]>([]);
   const [companyAccessLogs, setCompanyAccessLogs] = useState<AccessLog[]>([]);
   const [companyBeaconLogs, setCompanyBeaconLogs] = useState<BeaconLog[]>([]);
+  const [pinRequests, setPinRequests] = useState<PinResetRequest[]>([]);
 
   const fetchData = async () => {
     if (!user || !user.companyId) return;
@@ -122,13 +125,15 @@ export default function CompanyDashboard() {
             companyData,
             emailData,
             accessLogData,
-            beaconLogData
+            beaconLogData,
+            pinRequestData
         ] = await Promise.all([
             data.users.findByCompany(companyId),
             data.companies.findById(companyId),
             data.emails.list({ companyId }),
             data.accessLogs.list({ companyId }),
             data.beaconLogs.list({ companyId }),
+            user.role === 'company_admin' ? data.pinResetRequests.list({ companyId }) : Promise.resolve([])
         ]);
 
         setEmployees(employeeData);
@@ -136,6 +141,7 @@ export default function CompanyDashboard() {
         setCompanyEmails(emailData);
         setCompanyAccessLogs(accessLogData);
         setCompanyBeaconLogs(beaconLogData);
+        setPinRequests(pinRequestData);
   };
 
 
@@ -147,6 +153,7 @@ export default function CompanyDashboard() {
   
   const suspiciousOpens = companyBeaconLogs.filter(l => l.status === 'Suspicious').length;
   const failedPinAttempts = companyAccessLogs.filter(l => l.status === 'Failed').length;
+  const pendingPinRequests = pinRequests.filter(r => r.status === 'pending').length;
 
   const handleRemoveEmployee = async (employeeId: string) => {
     // In a real app, this would have a confirmation dialog
@@ -190,6 +197,20 @@ export default function CompanyDashboard() {
                 <span className="sr-only">Employees</span>
               </Link>
            )}
+           {isCompanyAdmin && (
+                <Link
+                href="/admin/pin-requests"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8 relative"
+              >
+                <Key className="h-5 w-5" />
+                {pendingPinRequests > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {pendingPinRequests}
+                  </span>
+                )}
+                <span className="sr-only">PIN Requests</span>
+              </Link>
+           )}
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
@@ -207,6 +228,7 @@ export default function CompanyDashboard() {
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
                 <NaturalLanguageQuery />
+                <BeaconTracking companyId={user.companyId} isAdmin={false} />
                 <SummarizedReport />
             </div>
             <RealTimeAlerts />
@@ -234,6 +256,12 @@ export default function CompanyDashboard() {
                         <span className="text-muted-foreground">Team Members</span>
                         <span className="font-bold">{employees.length}</span>
                     </div>
+                    {isCompanyAdmin && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">Pending PIN Requests</span>
+                            <span className="font-bold text-blue-600">{pendingPinRequests}</span>
+                        </div>
+                    )}
                 </CardContent>
              </Card>
              {isCompanyAdmin && (
