@@ -2,18 +2,52 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
-import serviceAccount from '../serviceAccount.json';
+import { config } from 'dotenv';
 
-// The service account is now imported directly from the JSON file.
-// This avoids parsing issues with environment variables.
-if (!serviceAccount || !serviceAccount.private_key) {
-  console.error("serviceAccount.json is missing or invalid.");
-  console.error("Please ensure you have a valid service account key at the root of your project.");
+// Load environment variables from .env file
+config();
+
+// Use environment variables for Firebase credentials
+const serviceAccount = {
+  type: process.env.FIREBASE_TYPE || "service_account",
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI || "https://accounts.google.com/o/oauth2/auth",
+  token_uri: process.env.FIREBASE_TOKEN_URI || "https://oauth2.googleapis.com/token",
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL || "https://www.googleapis.com/oauth2/v1/certs",
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
+};
+
+// Check if required environment variables are set
+if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+  console.error("Missing required Firebase environment variables:");
+  console.error("Please set the following environment variables:");
+  console.error("- FIREBASE_PROJECT_ID");
+  console.error("- FIREBASE_PRIVATE_KEY");
+  console.error("- FIREBASE_CLIENT_EMAIL");
+  console.error("Or create a serviceAccount.json file at the project root.");
   process.exit(1);
 }
 
+// Ensure all required fields are present for TypeScript
+const validatedServiceAccount = {
+  type: serviceAccount.type,
+  project_id: serviceAccount.project_id!,
+  private_key_id: serviceAccount.private_key_id!,
+  private_key: serviceAccount.private_key!,
+  client_email: serviceAccount.client_email!,
+  client_id: serviceAccount.client_id!,
+  auth_uri: serviceAccount.auth_uri,
+  token_uri: serviceAccount.token_uri,
+  auth_provider_x509_cert_url: serviceAccount.auth_provider_x509_cert_url,
+  client_x509_cert_url: serviceAccount.client_x509_cert_url!
+} as const;
+
 initializeApp({
-  credential: cert(serviceAccount)
+  credential: cert(validatedServiceAccount as any)
 });
 
 const db = getFirestore();
