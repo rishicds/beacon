@@ -59,11 +59,7 @@ const composeEmailFlow = ai.defineFlow(
         const secureLink = `${baseUrl}/secure/${token}`;
 
         // Generate beacon tracking URLs
-        const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-        const appwriteProjectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '';
-        const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
-        
-        const beaconUrl = `${appwriteEndpoint}/functions/${beaconFunctionId}/executions?emailId=${email.id}&recipientEmail=${encodeURIComponent(input.recipient)}&companyId=${encodeURIComponent(input.companyId)}&senderUserId=${encodeURIComponent(input.senderId)}`;
+        const beaconUrl = `${baseUrl}/api/beacon?emailId=${email.id}&recipientEmail=${encodeURIComponent(input.recipient)}&companyId=${encodeURIComponent(input.companyId)}&senderUserId=${encodeURIComponent(input.senderId)}`;
 
         const emailHtml = `
             <h1>You've received a secure document</h1>
@@ -131,11 +127,7 @@ const composeEmailFlow = ai.defineFlow(
         const secureLink = `${baseUrl}/secure/${token}`;
 
         // Generate beacon tracking URLs
-        const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-        const appwriteProjectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '';
-        const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
-        
-        const beaconUrl = `${appwriteEndpoint}/functions/${beaconFunctionId}/executions?emailId=${email.id}&recipientEmail=${encodeURIComponent(input.recipient)}&companyId=${encodeURIComponent(input.companyId)}&senderUserId=${encodeURIComponent(input.senderId)}`;
+        const beaconUrl = `${baseUrl}/api/beacon?emailId=${email.id}&recipientEmail=${encodeURIComponent(input.recipient)}&companyId=${encodeURIComponent(input.companyId)}&senderUserId=${encodeURIComponent(input.senderId)}`;
 
          const emailHtml = `
             <h1>You've received a secure document from ${sender.name}</h1>

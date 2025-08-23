@@ -11,7 +11,7 @@ import { config } from 'dotenv';
 config();
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'http://66.42.92.192/v1';
 const BEACON_FUNCTION_ID = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
 
 // Test data

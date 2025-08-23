@@ -113,8 +113,7 @@ export class BeaconService {
     // Track email access attempt (when secure link is accessed)
     static async trackEmailAccess(emailId: string, recipientEmail: string, companyId: string, senderUserId: string, locationData?: GeolocationPosition) {
         try {
-            const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-            const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
             
             // Get additional device information
             const deviceInfo = this.getDeviceInfo();
@@ -137,8 +136,8 @@ export class BeaconService {
                 trackingData.accuracy = locationData.coords.accuracy;
             }
 
-            // Send tracking data to Appwrite function
-            const response = await fetch(`${appwriteEndpoint}/functions/${beaconFunctionId}/executions`, {
+            // Send tracking data to Next.js API route
+            const response = await fetch(`${baseUrl}/api/beacon`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -228,7 +227,7 @@ export class BeaconService {
     // Track pixel load (for email opens)
     static async trackPixelLoad(emailId: string, recipientEmail: string, companyId: string, senderUserId: string) {
         try {
-            const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+            const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'http://66.42.92.192/v1';
             const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
             
             // Create tracking pixel URL

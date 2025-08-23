@@ -1,8 +1,7 @@
 // Utility functions for beacon tracking
 export const trackPageView = async (emailId: string, recipientEmail: string, companyId: string, senderUserId: string) => {
   try {
-    const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-    const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
     
     // Get device information
     const userAgent = navigator.userAgent;
@@ -53,7 +52,7 @@ export const trackPageView = async (emailId: string, recipientEmail: string, com
       console.log('Location not available for tracking:', error);
     }
 
-    const response = await fetch(`${appwriteEndpoint}/functions/${beaconFunctionId}/executions`, {
+    const response = await fetch(`${baseUrl}/api/beacon`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

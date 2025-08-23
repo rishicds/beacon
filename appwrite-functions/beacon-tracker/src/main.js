@@ -1,41 +1,7 @@
 import { Client, Databases, Query, ID } from 'node-appwrite';
-import { Headers } from 'node-fetch';
-
-// Types
-interface BeaconTrackingData {
-    emailId: string;
-    recipientEmail: string;
-    companyId: string;
-    senderUserId: string;
-    ip: string;
-    userAgent: string;
-    device: string;
-    browser: string;
-    os: string;
-    location: {
-        country: string;
-        city: string;
-        region: string;
-        latitude?: number;
-        longitude?: number;
-    };
-    timestamp: string;
-    referrer?: string;
-    screenResolution?: string;
-    language?: string;
-    timezone?: string;
-}
-
-interface LocationData {
-    country: string;
-    city: string;
-    region: string;
-    latitude?: number;
-    longitude?: number;
-}
 
 // Helper function to get location from IP
-async function getLocationFromIP(ip: string): Promise<LocationData> {
+async function getLocationFromIP(ip) {
     try {
         // Using ipapi.co for geolocation (free tier available)
         const response = await fetch(`https://ipapi.co/${ip}/json/`);
@@ -59,7 +25,7 @@ async function getLocationFromIP(ip: string): Promise<LocationData> {
 }
 
 // Helper function to parse user agent
-function parseUserAgent(userAgent: string): { device: string; browser: string; os: string } {
+function parseUserAgent(userAgent) {
     let device = 'Unknown';
     let browser = 'Unknown';
     let os = 'Unknown';
@@ -87,7 +53,7 @@ function parseUserAgent(userAgent: string): { device: string; browser: string; o
 }
 
 // Helper function to get real IP address
-function getRealIP(headers: any, forwardedFor?: string): string {
+function getRealIP(headers, forwardedFor) {
     // Check various headers for real IP
     const xForwardedFor = headers['x-forwarded-for'];
     const xRealIP = headers['x-real-ip'];
@@ -105,11 +71,11 @@ function getRealIP(headers: any, forwardedFor?: string): string {
     return forwardedFor || '127.0.0.1';
 }
 
-export default async ({ req, res, log, error }: any) => {
+export default async ({ req, res, log, error }) => {
     try {
         // Initialize Appwrite client
         const client = new Client()
-            .setEndpoint(process.env.APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1')
+            .setEndpoint(process.env.APPWRITE_ENDPOINT || 'http://66.42.92.192/v1')
             .setProject(process.env.APPWRITE_PROJECT_ID || '')
             .setKey(process.env.APPWRITE_API_KEY || ''); // Server API key
 
@@ -117,7 +83,7 @@ export default async ({ req, res, log, error }: any) => {
 
         // Get tracking data from request
         const method = req.method;
-        let trackingData: any = {};
+        let trackingData = {};
 
         if (method === 'GET') {
             // Extract from query parameters
@@ -148,7 +114,7 @@ export default async ({ req, res, log, error }: any) => {
         const location = await getLocationFromIP(ip);
 
         // Prepare beacon data
-        const beaconData: BeaconTrackingData = {
+        const beaconData = {
             emailId: trackingData.emailId,
             recipientEmail: trackingData.recipientEmail,
             companyId: trackingData.companyId || 'unknown',

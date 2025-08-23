@@ -339,16 +339,89 @@ export default function EmailDetailPage() {
                   <CardTitle className="flex items-center gap-2">
                     <Eye className="h-5 w-5" />
                     Beacon Triggers ({email.beaconLogs.length})
+                    {(() => {
+                      const suspiciousCount = email.beaconLogs.filter((log, index) => {
+                        if (index === 0) return false; // First log is never suspicious
+                        const firstLog = email.beaconLogs[email.beaconLogs.length - 1]; // Oldest first
+                        return log.ip !== firstLog?.ip || log.device !== firstLog?.device || log.userAgent !== firstLog?.userAgent;
+                      }).length;
+                      return suspiciousCount > 0 && (
+                        <Badge variant="destructive" className="ml-2">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {suspiciousCount} Suspicious
+                        </Badge>
+                      );
+                    })()}
                   </CardTitle>
                   <CardDescription>
                     Email open tracking and suspicious activity detection
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {(() => {
+                    const suspiciousLogs = email.beaconLogs.filter((log, index) => {
+                      if (index === 0) return false;
+                      const firstLog = email.beaconLogs[email.beaconLogs.length - 1];
+                      return log.ip !== firstLog?.ip || log.device !== firstLog?.device || log.userAgent !== firstLog?.userAgent;
+                    });
+                    
+                    return suspiciousLogs.length > 0 && (
+                      <Card className="mb-4 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-red-800 dark:text-red-200 flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5" />
+                            Suspicious Activity Detected
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="text-sm text-red-700 dark:text-red-300 space-y-2">
+                            <p>This email has been opened from multiple devices/locations, which may indicate unauthorized access:</p>
+                            <ul className="list-disc list-inside space-y-1">
+                              {(() => {
+                                const firstLog = email.beaconLogs[email.beaconLogs.length - 1];
+                                const issues = [];
+                                
+                                const uniqueIPs = new Set(email.beaconLogs.map(log => log.ip));
+                                if (uniqueIPs.size > 1) {
+                                  issues.push(`${uniqueIPs.size} different IP addresses`);
+                                }
+                                
+                                const uniqueDevices = new Set(email.beaconLogs.map(log => log.device));
+                                if (uniqueDevices.size > 1) {
+                                  issues.push(`${uniqueDevices.size} different device types`);
+                                }
+                                
+                                const uniqueLocations = new Set(email.beaconLogs.map(log => {
+                                  try {
+                                    const location = typeof log.location === 'string' ? JSON.parse(log.location) : log.location;
+                                    return `${location?.city || 'Unknown'}, ${location?.country || 'Unknown'}`;
+                                  } catch {
+                                    return 'Unknown';
+                                  }
+                                }));
+                                if (uniqueLocations.size > 1) {
+                                  issues.push(`${uniqueLocations.size} different locations`);
+                                }
+                                
+                                return issues.map((issue, idx) => (
+                                  <li key={idx}>{issue}</li>
+                                ));
+                              })()}
+                            </ul>
+                            {email.revoked && (
+                              <p className="font-medium">⚠️ This email link has been automatically revoked for security.</p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })()}
+                  
                   {email.beaconLogs.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Status</TableHead>
                           <TableHead>Device Info</TableHead>
                           <TableHead>Location</TableHead>
                           <TableHead>IP Address</TableHead>
@@ -356,8 +429,29 @@ export default function EmailDetailPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {email.beaconLogs.map((log) => (
-                          <TableRow key={log.$id}>
+                        {email.beaconLogs.map((log, index) => {
+                          const firstLog = email.beaconLogs[email.beaconLogs.length - 1]; // Oldest first
+                          const isSuspicious = index > 0 && (
+                            log.ip !== firstLog?.ip || 
+                            log.device !== firstLog?.device || 
+                            log.userAgent !== firstLog?.userAgent
+                          );
+                          
+                          return (
+                            <TableRow key={log.$id} className={isSuspicious ? "bg-red-50 dark:bg-red-950/20" : ""}>
+                              <TableCell>
+                                {isSuspicious ? (
+                                  <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Suspicious
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="default" className="flex items-center gap-1 w-fit">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Normal
+                                  </Badge>
+                                )}
+                              </TableCell>
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2 text-sm">
@@ -374,13 +468,31 @@ export default function EmailDetailPage() {
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                   <div className="text-sm">
-                                    {log.location?.city || 'Unknown'}, {log.location?.country || 'Unknown'}
+                                    {(() => {
+                                      try {
+                                        const location = typeof log.location === 'string' 
+                                          ? JSON.parse(log.location) 
+                                          : log.location;
+                                        return `${location?.city || 'Unknown'}, ${location?.country || 'Unknown'}`;
+                                      } catch {
+                                        return 'Unknown';
+                                      }
+                                    })()}
                                   </div>
-                                  {log.location?.region && (
-                                    <div className="text-xs text-muted-foreground">
-                                      {log.location.region}
-                                    </div>
-                                  )}
+                                  {(() => {
+                                    try {
+                                      const location = typeof log.location === 'string' 
+                                        ? JSON.parse(log.location) 
+                                        : log.location;
+                                      return location?.region && (
+                                        <div className="text-xs text-muted-foreground">
+                                          {location.region}
+                                        </div>
+                                      );
+                                    } catch {
+                                      return null;
+                                    }
+                                  })()}
                                 </div>
                               </div>
                             </TableCell>
@@ -389,7 +501,8 @@ export default function EmailDetailPage() {
                             </TableCell>
                             <TableCell>{formatDateShort(log.timestamp)}</TableCell>
                           </TableRow>
-                        ))}
+                        );
+                        })}
                       </TableBody>
                     </Table>
                   ) : (
@@ -502,7 +615,16 @@ export default function EmailDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Unique Locations</span>
                     <span className="font-medium">
-                      {new Set(email.beaconLogs.map(log => `${log.location?.city || 'Unknown'}, ${log.location?.country || 'Unknown'}`)).size}
+                      {new Set(email.beaconLogs.map(log => {
+                        try {
+                          const location = typeof log.location === 'string' 
+                            ? JSON.parse(log.location) 
+                            : log.location;
+                          return `${location?.city || 'Unknown'}, ${location?.country || 'Unknown'}`;
+                        } catch {
+                          return 'Unknown';
+                        }
+                      })).size}
                     </span>
                   </div>
                   <div className="flex justify-between">
