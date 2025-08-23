@@ -13,12 +13,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { data, type Email, type User, type Company, type BeaconLog, type AccessLog } from "@/lib/data";
+import { BeaconService } from "@/lib/beacon-service";
 import AppHeader from "@/components/app-header";
 
 type EmailDetails = Email & {
   senderName?: string;
   companyName?: string;
-  beaconLogs: BeaconLog[];
+  beaconLogs: any[]; // Use BeaconService data instead
   accessLogs: AccessLog[];
 };
 
@@ -36,11 +37,10 @@ export default function EmailDetailPage() {
       
       setIsLoading(true);
       try {
-        const [allEmails, usersData, companiesData, beaconLogsData, accessLogsData] = await Promise.all([
+        const [allEmails, usersData, companiesData, accessLogsData] = await Promise.all([
           data.emails.list(),
           data.users.list(),
           data.companies.list(),
-          data.beaconLogs.list(),
           data.accessLogs.list()
         ]);
 
@@ -54,16 +54,18 @@ export default function EmailDetailPage() {
           return;
         }
 
+        // Fetch beacon logs from BeaconService
+        const beaconLogs = await BeaconService.getBeaconLogsByEmail(emailId);
+
         const sender = usersData.find(u => u.id === emailData.senderId);
         const company = companiesData.find(c => c.id === emailData.companyId);
-        const relatedBeaconLogs = beaconLogsData.filter(log => log.emailId === emailId);
         const relatedAccessLogs = accessLogsData.filter(log => log.emailId === emailId);
 
         setEmail({
           ...emailData,
           senderName: sender?.name || 'Unknown',
           companyName: company?.name || (emailData.companyId === 'ADMIN' ? 'Admin' : 'Unknown'),
-          beaconLogs: relatedBeaconLogs,
+          beaconLogs: beaconLogs,
           accessLogs: relatedAccessLogs
         });
       } catch (error) {
@@ -347,39 +349,43 @@ export default function EmailDetailPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Status</TableHead>
+                          <TableHead>Device Info</TableHead>
+                          <TableHead>Location</TableHead>
                           <TableHead>IP Address</TableHead>
-                          <TableHead>Device</TableHead>
                           <TableHead>Timestamp</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {email.beaconLogs.map((log) => (
-                          <TableRow key={log.id}>
+                          <TableRow key={log.$id}>
                             <TableCell>
-                              <Badge 
-                                variant={log.status === 'Suspicious' ? 'destructive' : 'default'}
-                                className="flex items-center gap-1 w-fit"
-                              >
-                                {log.status === 'Suspicious' ? (
-                                  <AlertTriangle className="h-3 w-3" />
-                                ) : (
-                                  <Eye className="h-3 w-3" />
-                                )}
-                                {log.status}
-                              </Badge>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Monitor className="h-4 w-4 text-muted-foreground" />
+                                  {log.device} • {log.browser} • {log.os}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {log.userAgent}
+                                </div>
+                              </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                                {log.ip}
+                                <div>
+                                  <div className="text-sm">
+                                    {log.location?.city || 'Unknown'}, {log.location?.country || 'Unknown'}
+                                  </div>
+                                  {log.location?.region && (
+                                    <div className="text-xs text-muted-foreground">
+                                      {log.location.region}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Monitor className="h-4 w-4 text-muted-foreground" />
-                                {log.device}
-                              </div>
+                              <div className="font-mono text-sm">{log.ip}</div>
                             </TableCell>
                             <TableCell>{formatDateShort(log.timestamp)}</TableCell>
                           </TableRow>
@@ -488,9 +494,25 @@ export default function EmailDetailPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Unique Devices</span>
+                    <span className="font-medium">
+                      {new Set(email.beaconLogs.map(log => `${log.device}-${log.ip}`)).size}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Unique Locations</span>
+                    <span className="font-medium">
+                      {new Set(email.beaconLogs.map(log => `${log.location?.city || 'Unknown'}, ${log.location?.country || 'Unknown'}`)).size}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Suspicious Opens</span>
                     <span className="font-medium">
-                      {email.beaconLogs.filter(log => log.status === 'Suspicious').length}
+                      {email.beaconLogs.filter(log => {
+                        // Check if this open has different IP/device from first open
+                        const firstLog = email.beaconLogs[email.beaconLogs.length - 1]; // Oldest first
+                        return log.ip !== firstLog?.ip || log.device !== firstLog?.device;
+                      }).length}
                     </span>
                   </div>
                 </CardContent>

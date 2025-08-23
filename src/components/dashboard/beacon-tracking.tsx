@@ -192,7 +192,7 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                             {Object.keys(analytics.deviceStats)[0] || 'N/A'}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            {Object.values(analytics.deviceStats)[0] || 0} opens
+                            {String(Object.values(analytics.deviceStats)[0] || 0)} opens
                         </p>
                     </CardContent>
                 </Card>
@@ -207,7 +207,7 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                             {Object.keys(analytics.locationStats)[0] || 'Unknown'}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            {Object.values(analytics.locationStats)[0] || 0} opens
+                            {String(Object.values(analytics.locationStats)[0] || 0)} opens
                         </p>
                     </CardContent>
                 </Card>

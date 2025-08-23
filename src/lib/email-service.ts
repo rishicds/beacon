@@ -1,4 +1,5 @@
 import { databases } from './appwrite';
+import { Query } from 'appwrite';
 
 export class EmailService {
     static async getRevokedEmails(companyId?: string): Promise<string[]> {
@@ -17,6 +18,7 @@ export class EmailService {
             );
             return response.documents.map((doc: any) => doc.$id || doc.id);
         } catch (e) {
+            console.error('Failed to fetch revoked emails:', e);
             return [];
         }
     }

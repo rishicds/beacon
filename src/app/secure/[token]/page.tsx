@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { LockKeyhole, ShieldCheck, ShieldX, Paperclip, Download, Hourglass } from "lucide-react";
+import { LockKeyhole, ShieldCheck, ShieldX, Paperclip, Download, Hourglass, MapPin } from "lucide-react";
 import GuardianMailLogo from "@/components/icons/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import type { VerifyPinOutput } from "@/ai/types/unlock-content-types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { data, type Email } from "@/lib/data";
 import { Timestamp } from "firebase/firestore";
+import { BeaconService } from "@/lib/beacon-service";
+import { trackPageView } from "@/lib/tracking-utils";
 
 function UnlockedContentDisplay({ document }: { document: NonNullable<VerifyPinOutput['document']> }) {
   return (
@@ -65,6 +67,9 @@ export default function SecureLinkPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [emailMeta, setEmailMeta] = useState<Email | null>(null);
   const [requiresPin, setRequiresPin] = useState<boolean>(true);
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState<boolean>(false);
+  const [isRequestingLocation, setIsRequestingLocation] = useState<boolean>(false);
+  const [userLocation, setUserLocation] = useState<GeolocationPosition | null>(null);
   const params = useParams();
   const token = params.token as string;
 
@@ -95,6 +100,19 @@ export default function SecureLinkPage() {
 
         setEmailMeta(email);
 
+        // Track email access attempt with beacon (every time the page is loaded)
+        try {
+          await trackPageView(
+            email.id, 
+            email.recipient, 
+            email.companyId, 
+            email.senderId
+          );
+          console.log('Email access tracked successfully');
+        } catch (error) {
+          console.error('Failed to track email access:', error);
+        }
+
         if (email.isGuest) {
           // For guests, bypass PIN and unlock content directly
           const result = await verifyPinAndGetContent({ token, pin: "GUEST_ACCESS" });
@@ -109,19 +127,21 @@ export default function SecureLinkPage() {
           const recipientInDb = allUsers.find(user => user.email === email.recipient);
           
           if (!recipientInDb) {
-            // Recipient not in database - unlock directly (no PIN required)
+            // Recipient not in database - require location but no PIN
             setRequiresPin(false);
-            const result = await verifyPinAndGetContent({ token, pin: "" });
-            if (result.success) {
-              setUnlockedContent(result.document ?? null);
-            } else {
-              setError(result.error || "Could not retrieve content.");
+            if (locationPermissionGranted) {
+              const result = await verifyPinAndGetContent({ token, pin: "" });
+              if (result.success) {
+                setUnlockedContent(result.document ?? null);
+              } else {
+                setError(result.error || "Could not retrieve content.");
+              }
             }
           } else if (!recipientInDb.pinHash) {
             // Recipient exists but hasn't set PIN
             setError("You need to set up your PIN before accessing secure content. Please contact your administrator.");
           } else {
-            // Recipient exists and has PIN - require PIN verification
+            // Recipient exists and has PIN - require PIN verification and location
             setRequiresPin(true);
           }
         }
@@ -132,7 +152,24 @@ export default function SecureLinkPage() {
       }
     }
     checkToken();
-  }, [token]);
+  }, [token, locationPermissionGranted, userLocation]);
+
+  // Request location permission
+  const requestLocationPermission = async () => {
+    setIsRequestingLocation(true);
+    setError("");
+    
+    try {
+      const position = await BeaconService.getLocationWithPermission();
+      setUserLocation(position);
+      setLocationPermissionGranted(true);
+      setError("");
+    } catch (error: any) {
+      setError(error.message || "Location access is required to view secure content.");
+    } finally {
+      setIsRequestingLocation(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +180,18 @@ export default function SecureLinkPage() {
       const result = await verifyPinAndGetContent({ token, pin });
       if (result.success) {
         setUnlockedContent(result.document ?? null);
+        // Track successful PIN entry with additional tracking
+        try {
+          await trackPageView(
+            emailMeta!.id, 
+            emailMeta!.recipient, 
+            emailMeta!.companyId, 
+            emailMeta!.senderId
+          );
+          console.log('Successful PIN entry tracked');
+        } catch (error) {
+          console.error('Failed to track successful PIN entry:', error);
+        }
         window.dispatchEvent(new Event('refresh-logs'));
       } else {
         setError(result.error || "An unknown error occurred.");
@@ -178,6 +227,41 @@ export default function SecureLinkPage() {
 
     if (unlockedContent) {
       return <UnlockedContentDisplay document={unlockedContent} />;
+    }
+    
+    // Show location permission request if not granted and not guest
+    if (emailMeta && !emailMeta.isGuest && !locationPermissionGranted) {
+      return (
+        <Card className="w-full max-w-sm shadow-2xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/50">
+              <MapPin className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <CardTitle className="text-2xl">Location Required</CardTitle>
+            <CardDescription>
+              For security purposes, this secure document requires location access to verify your identity and track access attempts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <ShieldX className="h-4 w-4" />
+                <p>{error}</p>
+              </div>
+            )}
+            <Button 
+              onClick={requestLocationPermission} 
+              className="w-full" 
+              disabled={isRequestingLocation}
+            >
+              {isRequestingLocation ? 'Requesting Location...' : 'Grant Location Access'}
+            </Button>
+          </CardContent>
+          <CardFooter className="text-center text-xs text-muted-foreground">
+            <p>Your location data is used only for security monitoring and will not be stored permanently.</p>
+          </CardFooter>
+        </Card>
+      );
     }
     
     if (emailMeta && !emailMeta.isGuest && requiresPin) {

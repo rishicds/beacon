@@ -5,16 +5,17 @@ export class BeaconService {
     // Get all beacon logs for admin
     static async getAllBeaconLogs(limit = 100, offset = 0) {
         try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                BEACON_COLLECTION_ID,
-                [
-                    Query.orderDesc('timestamp'),
-                    Query.limit(limit),
-                    Query.offset(offset)
-                ]
-            );
-            return response.documents;
+            const response = await fetch(`/api/beacon/logs?limit=${limit}&offset=${offset}`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch beacon logs: ${response.statusText}`);
+            }
+
+            return await response.json();
         } catch (error) {
             console.error('Failed to fetch beacon logs:', error);
             throw error;
@@ -24,17 +25,17 @@ export class BeaconService {
     // Get beacon logs for specific company
     static async getBeaconLogsByCompany(companyId: string, limit = 100, offset = 0) {
         try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                BEACON_COLLECTION_ID,
-                [
-                    Query.equal('companyId', companyId),
-                    Query.orderDesc('timestamp'),
-                    Query.limit(limit),
-                    Query.offset(offset)
-                ]
-            );
-            return response.documents;
+            const response = await fetch(`/api/beacon/logs?companyId=${companyId}&limit=${limit}&offset=${offset}`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch company beacon logs: ${response.statusText}`);
+            }
+
+            return await response.json();
         } catch (error) {
             console.error('Failed to fetch company beacon logs:', error);
             throw error;
@@ -44,15 +45,17 @@ export class BeaconService {
     // Get beacon logs for specific email
     static async getBeaconLogsByEmail(emailId: string) {
         try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                BEACON_COLLECTION_ID,
-                [
-                    Query.equal('emailId', emailId),
-                    Query.orderDesc('timestamp')
-                ]
-            );
-            return response.documents;
+            const response = await fetch(`/api/beacon/logs?emailId=${emailId}`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch email beacon logs: ${response.statusText}`);
+            }
+
+            return await response.json();
         } catch (error) {
             console.error('Failed to fetch email beacon logs:', error);
             throw error;
@@ -62,65 +65,21 @@ export class BeaconService {
     // Get beacon analytics summary
     static async getBeaconAnalytics(companyId?: string) {
         try {
-            let queries = [Query.limit(1000)];
-            if (companyId) {
-                queries.push(Query.equal('companyId', companyId));
+            const url = companyId 
+                ? `/api/beacon/analytics?companyId=${companyId}`
+                : '/api/beacon/analytics';
+
+            const response = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch beacon analytics: ${response.statusText}`);
             }
 
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                BEACON_COLLECTION_ID,
-                queries
-            );
-
-            const logs = response.documents;
-            
-            // Calculate analytics
-            const totalOpens = logs.length;
-            const uniqueOpens = new Set(logs.map(log => log.emailId)).size;
-            
-            // Device analytics
-            const deviceStats = logs.reduce((acc: any, log: any) => {
-                acc[log.device] = (acc[log.device] || 0) + 1;
-                return acc;
-            }, {});
-
-            // Browser analytics
-            const browserStats = logs.reduce((acc: any, log: any) => {
-                acc[log.browser] = (acc[log.browser] || 0) + 1;
-                return acc;
-            }, {});
-
-            // OS analytics
-            const osStats = logs.reduce((acc: any, log: any) => {
-                acc[log.os] = (acc[log.os] || 0) + 1;
-                return acc;
-            }, {});
-
-            // Location analytics
-            const locationStats = logs.reduce((acc: any, log: any) => {
-                const country = log.location?.country || 'Unknown';
-                acc[country] = (acc[country] || 0) + 1;
-                return acc;
-            }, {});
-
-            // Recent activity (last 7 days)
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            const recentLogs = logs.filter((log: any) => 
-                new Date(log.timestamp) > sevenDaysAgo
-            );
-
-            return {
-                totalOpens,
-                uniqueOpens,
-                recentOpens: recentLogs.length,
-                deviceStats,
-                browserStats,
-                osStats,
-                locationStats,
-                openRate: uniqueOpens > 0 ? ((totalOpens / uniqueOpens) * 100).toFixed(1) : '0'
-            };
+            return await response.json();
         } catch (error) {
             console.error('Failed to fetch beacon analytics:', error);
             throw error;
@@ -130,38 +89,158 @@ export class BeaconService {
     // Get top opened emails
     static async getTopOpenedEmails(companyId?: string, limit = 10) {
         try {
-            let queries = [Query.limit(1000)];
-            if (companyId) {
-                queries.push(Query.equal('companyId', companyId));
+            const url = companyId 
+                ? `/api/beacon/top-emails?companyId=${companyId}&limit=${limit}`
+                : `/api/beacon/top-emails?limit=${limit}`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch top opened emails: ${response.statusText}`);
             }
 
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                BEACON_COLLECTION_ID,
-                queries
-            );
-
-            const logs = response.documents;
-            
-            // Group by email ID and count opens
-            const emailOpenCounts = logs.reduce((acc: any, log: any) => {
-                acc[log.emailId] = (acc[log.emailId] || 0) + 1;
-                return acc;
-            }, {});
-
-            // Sort by open count and return top emails
-            const topEmails = Object.entries(emailOpenCounts)
-                .sort(([, a]: any, [, b]: any) => b - a)
-                .slice(0, limit)
-                .map(([emailId, openCount]) => ({
-                    emailId,
-                    openCount,
-                    recipientEmail: logs.find((log: any) => log.emailId === emailId)?.recipientEmail
-                }));
-
-            return topEmails;
+            return await response.json();
         } catch (error) {
             console.error('Failed to fetch top opened emails:', error);
+            throw error;
+        }
+    }
+
+    // Track email access attempt (when secure link is accessed)
+    static async trackEmailAccess(emailId: string, recipientEmail: string, companyId: string, senderUserId: string, locationData?: GeolocationPosition) {
+        try {
+            const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+            const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
+            
+            // Get additional device information
+            const deviceInfo = this.getDeviceInfo();
+            
+            const trackingData: any = {
+                emailId,
+                recipientEmail,
+                companyId,
+                senderUserId,
+                screenResolution: `${screen.width}x${screen.height}`,
+                language: navigator.language,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                ...deviceInfo
+            };
+
+            // Add location data if available
+            if (locationData) {
+                trackingData.latitude = locationData.coords.latitude;
+                trackingData.longitude = locationData.coords.longitude;
+                trackingData.accuracy = locationData.coords.accuracy;
+            }
+
+            // Send tracking data to Appwrite function
+            const response = await fetch(`${appwriteEndpoint}/functions/${beaconFunctionId}/executions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(trackingData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Tracking failed: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log('Beacon tracking successful:', result);
+            return result;
+
+        } catch (error) {
+            console.error('Failed to track email access:', error);
+            throw error;
+        }
+    }
+
+    // Get device and browser information
+    private static getDeviceInfo() {
+        const userAgent = navigator.userAgent;
+        
+        // Detect device type
+        let device = 'Desktop';
+        if (/Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+            device = /iPad|iPod/i.test(userAgent) ? 'Tablet' : 'Mobile';
+        } else if (/Tablet/i.test(userAgent)) {
+            device = 'Tablet';
+        }
+
+        // Detect browser
+        let browser = 'Unknown';
+        if (userAgent.includes('Chrome')) browser = 'Chrome';
+        else if (userAgent.includes('Firefox')) browser = 'Firefox';
+        else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browser = 'Safari';
+        else if (userAgent.includes('Edge')) browser = 'Edge';
+        else if (userAgent.includes('Opera')) browser = 'Opera';
+
+        // Detect OS
+        let os = 'Unknown';
+        if (userAgent.includes('Windows')) os = 'Windows';
+        else if (userAgent.includes('Mac OS')) os = 'macOS';
+        else if (userAgent.includes('Linux')) os = 'Linux';
+        else if (userAgent.includes('Android')) os = 'Android';
+        else if (userAgent.includes('iOS')) os = 'iOS';
+
+        return { device, browser, os };
+    }
+
+    // Request location permission and get coordinates
+    static async getLocationWithPermission(): Promise<GeolocationPosition> {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error('Geolocation is not supported by this browser.'));
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => resolve(position),
+                (error) => {
+                    let errorMessage = 'Location access denied.';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied by user.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out.';
+                            break;
+                    }
+                    reject(new Error(errorMessage));
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 600000 // 10 minutes
+                }
+            );
+        });
+    }
+
+    // Track pixel load (for email opens)
+    static async trackPixelLoad(emailId: string, recipientEmail: string, companyId: string, senderUserId: string) {
+        try {
+            const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+            const beaconFunctionId = process.env.NEXT_PUBLIC_APPWRITE_BEACON_FUNCTION_ID || 'beacon-tracker';
+            
+            // Create tracking pixel URL
+            const pixelUrl = `${appwriteEndpoint}/functions/${beaconFunctionId}/executions?emailId=${emailId}&recipientEmail=${encodeURIComponent(recipientEmail)}&companyId=${encodeURIComponent(companyId)}&senderUserId=${encodeURIComponent(senderUserId)}`;
+            
+            // Load pixel (this will trigger the beacon)
+            const img = new Image();
+            img.src = pixelUrl;
+            
+            return pixelUrl;
+        } catch (error) {
+            console.error('Failed to track pixel load:', error);
             throw error;
         }
     }
