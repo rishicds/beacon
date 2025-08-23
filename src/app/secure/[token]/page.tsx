@@ -1,0 +1,216 @@
+
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { LockKeyhole, ShieldCheck, ShieldX, Paperclip, Download, Hourglass } from "lucide-react";
+import GuardianMailLogo from "@/components/icons/logo";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Image from "next/image";
+import { verifyPinAndGetContent } from "@/ai/flows/unlock-content-flow";
+import type { VerifyPinOutput } from "@/ai/types/unlock-content-types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { data, type Email } from "@/lib/data";
+import { Timestamp } from "firebase/firestore";
+
+function UnlockedContentDisplay({ document }: { document: NonNullable<VerifyPinOutput['document']> }) {
+  return (
+    <Card className="w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in-95">
+      <CardHeader className="text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+          <ShieldCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
+        </div>
+        <CardTitle className="text-2xl">Access Granted</CardTitle>
+        <CardDescription>You have successfully unlocked the secure content.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <h3 className="font-semibold">{document.title}</h3>
+        <div
+          className="text-sm text-muted-foreground prose dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: document.description }}
+        />
+        <div className="relative h-96 w-full overflow-hidden rounded-lg border">
+          <Image
+            src={document.imageUrl}
+            alt="Secure document placeholder"
+            layout="fill"
+            objectFit="cover"
+            data-ai-hint={document.imageHint}
+          />
+        </div>
+        {document.attachmentFilename && document.attachmentDataUri && (
+          <a
+            href={document.attachmentDataUri}
+            download={document.attachmentFilename}
+            className="!mt-6"
+          >
+            <Button variant="outline" className="w-full">
+              <Download className="mr-2 h-4 w-4" />
+              Download Attachment: {document.attachmentFilename}
+            </Button>
+          </a>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function SecureLinkPage() {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
+  const [unlockedContent, setUnlockedContent] = useState<VerifyPinOutput['document'] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [emailMeta, setEmailMeta] = useState<Email | null>(null);
+  const params = useParams();
+  const token = params.token as string;
+
+  useEffect(() => {
+    async function checkToken() {
+      if (!token) {
+        setError("Invalid link. No token provided.");
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const email = await data.emails.findByToken(token);
+        if (!email) {
+          setError("Invalid or expired link.");
+          setIsLoading(false);
+          return;
+        }
+        if (email.revoked) {
+          setError("This secure link has been revoked by the sender.");
+          setIsLoading(false);
+          return;
+        }
+        if (email.expiresAt && (email.expiresAt as Timestamp).toDate() < new Date()) {
+          setError("This secure link has expired.");
+          setIsLoading(false);
+          return;
+        }
+
+        setEmailMeta(email);
+
+        if (email.isGuest) {
+          // For guests, bypass PIN and unlock content directly
+          const result = await verifyPinAndGetContent({ token, pin: "GUEST_ACCESS" });
+          if (result.success) {
+            setUnlockedContent(result.document ?? null);
+          } else {
+            setError(result.error || "Could not retrieve guest content.");
+          }
+        }
+      } catch (err) {
+        setError("An unexpected error occurred while verifying the link.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    checkToken();
+  }, [token]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    setError("");
+    setIsLoading(true);
+    try {
+      const result = await verifyPinAndGetContent({ token, pin });
+      if (result.success) {
+        setUnlockedContent(result.document ?? null);
+        window.dispatchEvent(new Event('refresh-logs'));
+      } else {
+        setError(result.error || "An unknown error occurred.");
+      }
+    } catch (err) {
+      setError("Failed to verify PIN. Please try again later.");
+    } finally {
+      setIsLoading(false);
+      setPin("");
+    }
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <Skeleton className="h-96 w-full max-w-sm" />;
+    }
+
+    if (error) {
+       return (
+         <Card className="w-full max-w-sm text-center">
+            <CardHeader>
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                     <Hourglass className="h-8 w-8 text-destructive" />
+                </div>
+                <CardTitle className="text-destructive">Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>{error}</p>
+            </CardContent>
+         </Card>
+       )
+    }
+
+    if (unlockedContent) {
+      return <UnlockedContentDisplay document={unlockedContent} />;
+    }
+    
+    if (emailMeta && !emailMeta.isGuest) {
+      return (
+        <Card className="w-full max-w-sm shadow-2xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <LockKeyhole className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Secure Access</CardTitle>
+            <CardDescription>Enter the sender's PIN to view the protected content.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pin">6-Digit PIN</Label>
+                <Input
+                  id="pin"
+                  type="password"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  maxLength={6}
+                  placeholder="••••••"
+                  className="text-center text-2xl tracking-[0.5em]"
+                  required
+                />
+              </div>
+              {error && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <ShieldX className="h-4 w-4" />
+                  <p>{error}</p>
+                </div>
+              )}
+              <Button type="submit" className="w-full" disabled={isLoading || !pin || pin.length < 6}>
+                {isLoading ? 'Verifying...' : 'Unlock Content'}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="text-center text-xs text-muted-foreground">
+            <p>This link is secure and tracked. Do not share the PIN.</p>
+          </CardFooter>
+        </Card>
+      );
+    }
+    
+    return null; // Should not be reached if logic is correct
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
+      <div className="absolute top-8 flex items-center gap-2">
+        <GuardianMailLogo className="h-8 w-8 text-primary" />
+        <span className="text-xl font-bold text-foreground">GuardianMail</span>
+      </div>
+      {renderContent()}
+    </div>
+  );
+}

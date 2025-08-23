@@ -1,0 +1,53 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    function isSignedIn() {
+      return request.auth != null;
+    }
+  
+    // USERS
+    // Users can read their own document.
+    // Users can only be created by the seed script (or admin).
+    // Admin can read/write any user document.
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow create: if !isSignedIn(); // Allow seed script
+    }
+    
+    // COMPANIES
+    // Any signed-in user can read company data.
+    // Only admin can write company data.
+    match /companies/{companyId} {
+      allow read: if isSignedIn();
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // EMAILS
+    // Users can create emails if they belong to the company.
+    // Users can only read emails associated with their company.
+    match /emails/{emailId} {
+      allow create: if isSignedIn() && request.resource.data.companyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
+      allow read: if isSignedIn() && resource.data.companyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
+      // No one can update or delete emails directly for logging purposes.
+      allow update, delete: if false;
+    }
+    
+    // ACCESS & BEACON LOGS
+    // Anyone can create logs (secure link page is not authenticated).
+    // Only users belonging to the company can read logs.
+    match /{collection}/{logId} {
+      allow create: if true;
+      allow read: if isSignedIn() && (
+                      resource.data.companyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+                    )
+                    && (collection == 'accessLogs' || collection == 'beaconLogs');
+      // Logs are immutable.
+      allow update, delete: if false;
+    }
+  }
+}
