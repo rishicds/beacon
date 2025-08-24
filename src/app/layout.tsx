@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
-  title: 'BeaconMail',
-  description: 'Secure Email + Beacon Platform',
+  title: 'Beacon',
+  description: 'Secure Email Platform, built for SC2',
 };
 
 export default function RootLayout({

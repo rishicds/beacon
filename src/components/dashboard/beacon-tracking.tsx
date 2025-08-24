@@ -19,6 +19,7 @@ import {
     Mail
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface BeaconTrackingProps {
     companyId?: string;
@@ -199,6 +200,12 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [beaconLogs]);
 
+    // Prepare chart data
+    const deviceData = Object.entries(analytics?.deviceStats || {}).map(([device, count]) => ({ name: device, value: count }));
+    const browserData = Object.entries(analytics?.browserStats || {}).map(([browser, count]) => ({ name: browser, value: count }));
+    const opensPerDay = Object.entries(analytics?.opensPerDay || {}).map(([date, count]) => ({ date, count }));
+    const pieColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1'];
+
     if (loading) {
         return (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -229,6 +236,45 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
     return (
         <div className="space-y-6">
             {/* Show warning for revoked emails */}
+            <div className="grid gap-4 md:grid-cols-2">
+               
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Device Types</CardTitle>
+                    </CardHeader>
+                    <CardContent style={{ height: 220 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={deviceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                                    {deviceData.map((entry, idx) => (
+                                        <Cell key={`cell-${idx}`} fill={pieColors[idx % pieColors.length]} />
+                                    ))}
+                                </Pie>
+                                <Legend />
+                                <RechartsTooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Browser Types</CardTitle>
+                    </CardHeader>
+                    <CardContent style={{ height: 220 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={browserData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                                    {browserData.map((entry, idx) => (
+                                        <Cell key={`cell-${idx}`} fill={pieColors[idx % pieColors.length]} />
+                                    ))}
+                                </Pie>
+                                <Legend />
+                                <RechartsTooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
             {revokedEmails.length > 0 && (
                 <Card className="border-red-500">
                     <CardHeader>
@@ -476,6 +522,9 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Charts row */}
+            
         </div>
     );
 }

@@ -24,6 +24,7 @@ import { data, type Company, type User, type Email } from "@/lib/data";
 import AppHeader from "./app-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 export default function AdminDashboard() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -43,6 +44,28 @@ export default function AdminDashboard() {
     }
     fetchData();
   }, [])
+
+  // Prepare data for charts
+  const emailsPerDay = (() => {
+    const map: Record<string, number> = {};
+    emails.forEach(e => {
+      const date = typeof e.createdAt === 'string' ? new Date(e.createdAt) : e.createdAt.toDate();
+      const key = date.toLocaleDateString();
+      map[key] = (map[key] || 0) + 1;
+    });
+    return Object.entries(map).map(([date, count]) => ({ date, count }));
+  })();
+
+  const userRoles = (() => {
+    const map: Record<string, number> = {};
+    users.forEach(u => {
+      const role = u.role || 'unknown';
+      map[role] = (map[role] || 0) + 1;
+    });
+    return Object.entries(map).map(([role, value]) => ({ name: role, value }));
+  })();
+
+  const pieColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1'];
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -144,7 +167,6 @@ export default function AdminDashboard() {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="mb-4 flex flex-wrap gap-2">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="beacon">Beacon</TabsTrigger>
               <TabsTrigger value="alerts">Alerts</TabsTrigger>
               {/* <TabsTrigger value="activity">Activity</TabsTrigger> */}
@@ -180,6 +202,42 @@ export default function AdminDashboard() {
                       return createdAt > yesterday;
                     }).length}</CardTitle>
                   </CardHeader>
+                </Card>
+              </div>
+              {/* Charts row */}
+              <div className="grid gap-6 mt-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-2">
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
+                  <CardHeader>
+                    <CardTitle>Emails Sent Per Day</CardTitle>
+                  </CardHeader>
+                  <CardContent style={{ height: 250 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={emailsPerDay}>
+                        <XAxis dataKey="date" fontSize={12} />
+                        <YAxis allowDecimals={false} fontSize={12} />
+                        <RechartsTooltip />
+                        <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
+                  <CardHeader>
+                    <CardTitle>User Roles Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent style={{ height: 250 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={userRoles} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                          {userRoles.map((entry, idx) => (
+                            <Cell key={`cell-${idx}`} fill={pieColors[idx % pieColors.length]} />
+                          ))}
+                        </Pie>
+                        <Legend />
+                        <RechartsTooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
                 </Card>
               </div>
               <div className="grid gap-6 mt-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-2">
@@ -266,12 +324,12 @@ export default function AdminDashboard() {
                 </Card>
               </div>
             </TabsContent>
-            <TabsContent value="insights">
+            {/* <TabsContent value="insights">
               <div className="grid gap-4 md:grid-cols-2">
                 <NaturalLanguageQuery />
                 <SummarizedReport />
               </div>
-            </TabsContent>
+            </TabsContent> */}
             <TabsContent value="beacon">
               <BeaconTracking isAdmin={true} />
             </TabsContent>
