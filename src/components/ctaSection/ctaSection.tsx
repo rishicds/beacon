@@ -29,7 +29,7 @@ export default function CTASection() {
             </h2>
             
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Join thousands of organizations protecting their sensitive data with GuardianMail.
+              Join thousands of organizations protecting their sensitive data with BeaconMail.
             </p>
           </div>
 

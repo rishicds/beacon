@@ -143,7 +143,7 @@ export default function HeroPage() {
                 <div className="flex-1 mx-4">
                   <div className="h-6 bg-slate-700/50 rounded-md flex items-center px-3">
                     <Lock className="h-3 w-3 text-green-400 mr-2" />
-                    <span className="text-xs text-slate-400">app.guardianmail.com</span>
+                    <span className="text-xs text-slate-400">app.beaconmail.com</span>
                   </div>
                 </div>
               </div>
@@ -152,7 +152,7 @@ export default function HeroPage() {
               <div className="relative aspect-video overflow-hidden">
                 <img
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                  alt="GuardianMail Dashboard"
+                  alt="BeaconMail Dashboard"
                   className="w-full h-full object-cover opacity-90"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent" />

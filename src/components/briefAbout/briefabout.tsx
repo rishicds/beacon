@@ -45,7 +45,7 @@ const CollapseCardFeatures = () => {
         >
           <div className="inline-flex items-center rounded-full border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm px-6 py-2 mb-8">
             <FiShield className="mr-2 h-4 w-4 text-blue-400" />
-            <span className="text-sm font-medium text-slate-300">Why GuardianMail</span>
+            <span className="text-sm font-medium text-slate-300">Why BeaconMail</span>
           </div>
           
           <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-6">
@@ -56,7 +56,7 @@ const CollapseCardFeatures = () => {
           </h2>
           
           <p className="text-slate-400 text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed">
-            Discover why organizations worldwide trust GuardianMail for their most sensitive communications. 
+            Discover why organizations worldwide trust BeaconMail for their most sensitive communications. 
             Our platform delivers enterprise-grade security without compromising on user experience.
           </p>
         </motion.div>

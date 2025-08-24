@@ -139,7 +139,7 @@ export default function OnboardingPage() {
             // Use the data.users.update to properly hash the PIN
             await data.users.update(user!.id, { pinHash: pin, pinSet: true });
             
-            toast({ title: "Onboarding Complete", description: "Your account is now fully set up. Welcome to GuardianMail!" });
+            toast({ title: "Onboarding Complete", description: "Your account is now fully set up. Welcome to BeaconMail!" });
             
             // Redirect based on role
             if (user?.role === 'admin') {
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
              <div className="absolute top-8 flex items-center gap-2">
                 <GuardianMailLogo className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold text-foreground">GuardianMail</span>
+                <span className="text-xl font-bold text-foreground">BeaconMail</span>
             </div>
             <Card className="w-full max-w-sm">
                  <CardHeader className="text-center">

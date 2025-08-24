@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
-  title: 'GuardianMail',
+  title: 'BeaconMail',
   description: 'Secure Email + Beacon Platform',
 };
 

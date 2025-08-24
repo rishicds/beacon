@@ -210,7 +210,7 @@ export default function AdminCompaniesPage() {
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
             <GuardianMailLogo className="h-5 w-5 transition-all group-hover:scale-110" />
-            <span className="sr-only">GuardianMail</span>
+            <span className="sr-only">BeaconMail</span>
           </Link>
           <Link href="/admin" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
             <BarChart3 className="h-5 w-5" />

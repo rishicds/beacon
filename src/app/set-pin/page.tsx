@@ -79,7 +79,7 @@ export default function SetPinPage() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 p-4">
              <div className="absolute top-8 flex items-center gap-2">
                 <GuardianMailLogo className="h-8 w-8 text-blue-500" />
-                <span className="text-xl font-bold text-gray-900">GuardianMail</span>
+                <span className="text-xl font-bold text-gray-900">BeaconMail</span>
             </div>
             <Card className="w-full max-w-sm bg-white border-gray-200 shadow-xl shadow-gray-200/50">
                  <CardHeader className="text-center">
