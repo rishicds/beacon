@@ -12,7 +12,7 @@ export class EmailService {
                     // Only fetch for this company
                     Query.equal('companyId', companyId),
                     Query.equal('revoked', true)
-                ] : [
+                ] : [ 
                     Query.equal('revoked', true)
                 ]
             );
