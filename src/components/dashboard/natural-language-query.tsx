@@ -4,6 +4,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { ArrowRight, Bot, Sparkles } from "lucide-react";
 
 import { processQuery } from "@/ai/flows/natural-language-admin-queries";
+import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,13 +65,14 @@ function SubmitButton() {
 }
 
 export default function NaturalLanguageQuery() {
+  const { user } = useAuth();
   const [state, formAction] = useFormState(async (prevState: any, formData: FormData) => {
     const query = formData.get("query") as string;
     if (!query) {
       return { ...initialState, error: "Please enter a query." };
     }
     try {
-        const result = await processQuery({ query, dbSchema });
+        const result = await processQuery({ query, dbSchema, user });
         return { ...result, error: null };
     } catch (e) {
         return { ...initialState, error: "An error occurred. Please try again." }

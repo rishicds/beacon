@@ -9,12 +9,13 @@ import {
   Trash2,
   Settings,
   Key,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import GuardianMailLogo from "./icons/logo";
 import BeaconTracking from "./dashboard/beacon-tracking";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./ui/card";
 import { useAuth } from "@/context/auth-context";
 import { data, type User, type Company, type Email, type AccessLog, type BeaconLog, type PinResetRequest } from "@/lib/data";
 import AppHeader from "./app-header";
@@ -32,6 +33,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import RealTimeAlerts from "@/components/dashboard/real-time-alerts";
+import { Building2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BarChart3 } from "lucide-react";
 
 
 function AddEmployeeDialog({ companyId, onEmployeeAdded }: { companyId: string, onEmployeeAdded: () => void }) {
@@ -141,6 +145,11 @@ export default function CompanyDashboard() {
 
 
   useEffect(() => {
+    if (!user || !user.companyId) return;
+    // Fetch company by companyId
+    data.companies.findById(user.companyId).then(companyData => {
+      setCompany(companyData ?? null);
+    });
     fetchData();
   }, [user]);
   
@@ -169,108 +178,170 @@ export default function CompanyDashboard() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-16 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Link
-            href="#"
-            className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-          >
-            <GuardianMailLogo className="h-5 w-5 transition-all group-hover:scale-110" />
-            <span className="sr-only">GuardianMail</span>
-          </Link>
-          <Link href="/company-dashboard" className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-            <Home className="h-5 w-5" />
-            <span className="sr-only">Dashboard</span>
-          </Link>
-          <Link
-            href="#"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Shield className="h-5 w-5" />
-            <span className="sr-only">Security</span>
-          </Link>
-          <Link
-            href="/company-dashboard/insights"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <span className="font-bold text-base">I</span>
-            <span className="sr-only">Insights</span>
-          </Link>
-          {isCompanyAdmin && (
-            <Link
-              href="/company-dashboard/employees"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-            >
-              <Users className="h-5 w-5" />
-              <span className="sr-only">Employees</span>
-            </Link>
-          )}
-          {isCompanyAdmin && (
-            <Link
-              href="/admin/pin-requests"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8 relative"
-            >
-              <Key className="h-5 w-5" />
-              {pendingPinRequests > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {pendingPinRequests}
-                </span>
-              )}
-              <span className="sr-only">PIN Requests</span>
-            </Link>
-          )}
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-20 flex-col border-r bg-background sm:flex shadow-lg">
+        <nav className="flex flex-col items-center gap-6 px-2 sm:py-8">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="#"
+                  className="group flex h-12 w-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-10 md:w-10 md:text-base shadow-md"
+                >
+                  <GuardianMailLogo className="h-6 w-6 transition-all group-hover:scale-110" />
+                  <span className="sr-only">GuardianMail</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Home</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/company-dashboard" className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow">
+                  <Home className="h-6 w-6" />
+                  <span className="sr-only">Dashboard</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Dashboard</TooltipContent>
+            </Tooltip>
+            {/* <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/company-dashboard/insights"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <BarChart3 className="h-6 w-6" />
+                  <span className="sr-only">Insights</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Insights</TooltipContent>
+            </Tooltip> */}
+            {isCompanyAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/company-dashboard/employees"
+                    className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                  >
+                    <Users className="h-6 w-6" />
+                    <span className="sr-only">Employees</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">Employees</TooltipContent>
+              </Tooltip>
+            )}
+            {isCompanyAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/admin/pin-requests"
+                    className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 relative shadow"
+                  >
+                    <Key className="h-6 w-6" />
+                    {pendingPinRequests > 0 && (
+                      <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-background">
+                        {pendingPinRequests}
+                      </span>
+                    )}
+                    <span className="sr-only">PIN Requests</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">PIN Requests</TooltipContent>
+              </Tooltip>
+            )}
+            {isCompanyAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/admin/emails"
+                    className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                  >
+                    <Mail className="h-6 w-6" />
+                    <span className="sr-only">Emails</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">Emails</TooltipContent>
+              </Tooltip>
+            )}
+          </TooltipProvider>
         </nav>
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Link
-            href="/settings"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Settings className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
-          </Link>
+        <div className="flex-1" />
+        <nav className="mb-6 flex flex-col items-center gap-6 px-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/settings"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <Settings className="h-6 w-6" />
+                  <span className="sr-only">Settings</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Settings</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </nav>
       </aside>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-16">
-        <AppHeader companyName={company?.name} />
-        <main className="grid flex-1 items-start gap-4 p-2 sm:px-4 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-          <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1">
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-20">
+        <AppHeader companyName={"Company Admin Dashboard"} />
+        <div className="max-w-7xl mx-auto">
+          {/* Company Name Card */}
+          {company && (
+            <Card className="mb-6 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Building2 className="h-6 w-6 text-primary" />
+                  {company.name}
+                </CardTitle>
+                <CardDescription className="mt-1 text-lg font-semibold text-primary">
+                  Company Admin Dashboard
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+          <main className="grid flex-1 items-start gap-6 p-2 sm:px-4 sm:py-0 md:gap-10 lg:grid-cols-3 xl:grid-cols-3">
+            <div className="grid auto-rows-max items-start gap-6 md:gap-10 lg:col-span-2">
+              <section className="grid gap-4 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1">
+                <h2 className="text-xl font-semibold mb-2 text-primary">Beacon Tracking</h2>
                 <BeaconTracking companyId={user.companyId} isAdmin={false} />
+              </section>
+              <section>
+                <h2 className="text-xl font-semibold mb-2 text-primary">Real-Time Alerts</h2>
+                <RealTimeAlerts />
+              </section>
             </div>
-            <RealTimeAlerts />
-          </div>
-          <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-             <Card className="shadow-lg">
+            <div className="grid auto-rows-max items-start gap-6 md:gap-10 lg:col-span-1">
+              <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle>Company Stats</CardTitle>
+                  <CardTitle>Company Stats</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-4">
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Emails Sent</span>
-                        <span className="font-bold">{companyEmails.length}</span>
+                <CardContent className="grid gap-4 divide-y divide-muted-foreground/10">
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-muted-foreground">Emails Sent</span>
+                    <span className="font-bold">{companyEmails.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-muted-foreground">Suspicious Opens</span>
+                    <span className="font-bold text-yellow-600">{suspiciousOpens}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-muted-foreground">Failed PIN Attempts</span>
+                    <span className="font-bold text-destructive">{failedPinAttempts}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-muted-foreground">Team Members</span>
+                    <span className="font-bold">{employees.length}</span>
+                  </div>
+                  {isCompanyAdmin && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground">Pending PIN Requests</span>
+                      <span className="font-bold text-blue-600">{pendingPinRequests}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Suspicious Opens</span>
-                        <span className="font-bold text-yellow-600">{suspiciousOpens}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Failed PIN Attempts</span>
-                        <span className="font-bold text-destructive">{failedPinAttempts}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Team Members</span>
-                        <span className="font-bold">{employees.length}</span>
-                    </div>
-                    {isCompanyAdmin && (
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Pending PIN Requests</span>
-                            <span className="font-bold text-blue-600">{pendingPinRequests}</span>
-                        </div>
-                    )}
+                  )}
                 </CardContent>
-             </Card>
-          </div>
-        </main>
+              </Card>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

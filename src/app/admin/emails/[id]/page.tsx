@@ -33,7 +33,8 @@ export default function EmailDetailPage() {
 
   useEffect(() => {
     async function fetchEmailDetails() {
-      if (!user || user.role !== 'admin' || !emailId) return;
+      // Allow both admin and company_admin
+      if (!user || (user.role !== 'admin' && user.role !== 'company_admin') || !emailId) return;
       
       setIsLoading(true);
       try {
@@ -87,7 +88,8 @@ export default function EmailDetailPage() {
     return <div>Loading...</div>;
   }
 
-  if (!user || user.role !== 'admin') {
+  // Allow both admin and company_admin
+  if (!user || (user.role !== 'admin' && user.role !== 'company_admin')) {
     return redirect('/login');
   }
 
@@ -150,6 +152,24 @@ export default function EmailDetailPage() {
     }
   };
 
+  const unrevokeEmail = async () => {
+    if (!email) return;
+    try {
+      await data.emails.unrevoke(email.id);
+      setEmail({ ...email, revoked: false });
+      toast({
+        title: "Email Unrevoked",
+        description: "The secure link has been restored successfully."
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to unrevoke email."
+      });
+    }
+  };
+
   const formatDate = (date: string | any) => {
     const d = typeof date === 'string' ? new Date(date) : date.toDate();
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
@@ -206,6 +226,10 @@ export default function EmailDetailPage() {
               <ArrowLeft className="h-4 w-4" />
               <span>Back to All Emails</span>
             </Link>
+            {/* Direct link to this email */}
+            <Link href={`/admin/emails/${emailId}`} className="ml-4 text-xs underline text-accent hover:text-accent-foreground">
+              View this email ({emailId})
+            </Link>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
@@ -251,6 +275,16 @@ export default function EmailDetailPage() {
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Revoke
+                        </Button>
+                      )}
+                      {email.revoked && (
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={unrevokeEmail}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Unrevoke
                         </Button>
                       )}
                     </div>
@@ -665,6 +699,23 @@ export default function EmailDetailPage() {
                         return log.ip !== firstLog?.ip || log.device !== firstLog?.device;
                       }).length}
                     </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Email Links */}
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle>Email Links</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Admin View:</span>
+                    <Link href={`/admin/emails/${emailId}`} className="block text-accent underline break-all">/admin/emails/{emailId}</Link>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">Secure Link:</span>
+                    <Link href={`/secure/${email?.secureLinkToken}`} className="block text-accent underline break-all">/secure/{email?.secureLinkToken}</Link>
                   </div>
                 </CardContent>
               </Card>

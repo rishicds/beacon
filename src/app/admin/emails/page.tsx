@@ -21,6 +21,7 @@ type EmailWithRelatedData = Email & {
   companyName?: string;
   beaconLogs: BeaconLog[];
   accessLogs: AccessLog[];
+  suspicious?: boolean; // Added suspicious flag
 };
 
 export default function EmailsPage() {
@@ -36,7 +37,7 @@ export default function EmailsPage() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!user || user.role !== 'admin') return;
+      if (!user || (user.role !== 'admin' && user.role !== 'company_admin')) return;
       
       setIsLoading(true);
       try {
@@ -48,8 +49,17 @@ export default function EmailsPage() {
           data.accessLogs.list()
         ]);
 
+        let filteredEmailsData = emailsData;
+        if (user.role === 'company_admin') {
+          // Only show emails sent by this company or its employees
+          const companyUsers = usersData.filter(u => u.companyId === user.companyId).map(u => u.id);
+          filteredEmailsData = emailsData.filter(email =>
+            email.companyId === user.companyId && companyUsers.includes(email.senderId)
+          );
+        }
+
         // Combine emails with related data
-        const emailsWithData: EmailWithRelatedData[] = emailsData.map(email => {
+        const emailsWithData: EmailWithRelatedData[] = filteredEmailsData.map(email => {
           const sender = usersData.find(u => u.id === email.senderId);
           const company = companiesData.find(c => c.id === email.companyId);
           const relatedBeaconLogs = beaconLogsData.filter(log => log.emailId === email.id);
@@ -60,18 +70,24 @@ export default function EmailsPage() {
             senderName: sender?.name || 'Unknown',
             companyName: company?.name || (email.companyId === 'ADMIN' ? 'Admin' : 'Unknown'),
             beaconLogs: relatedBeaconLogs,
-            accessLogs: relatedAccessLogs
+            accessLogs: relatedAccessLogs,
+            suspicious: typeof email.suspicious === 'boolean' ? email.suspicious : false // Ensure suspicious is present
           };
         });
 
-        // Sort by creation date (newest first)
-        emailsWithData.sort((a, b) => {
+        // Sort: emails marked suspicious first, then by date
+        const sortedEmails = [...emailsWithData].sort((a, b) => {
+          const aSuspicious = !!a.suspicious;
+          const bSuspicious = !!b.suspicious;
+          if (aSuspicious && !bSuspicious) return -1;
+          if (!aSuspicious && bSuspicious) return 1;
+          // If both are same, sort by date (newest first)
           const aDate = typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt.toDate();
           const bDate = typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt.toDate();
           return bDate.getTime() - aDate.getTime();
         });
 
-        setEmails(emailsWithData);
+        setEmails(sortedEmails);
         setUsers(usersData);
         setCompanies(companiesData);
       } catch (error) {
@@ -93,7 +109,7 @@ export default function EmailsPage() {
     return <div>Loading...</div>;
   }
 
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'company_admin')) {
     return redirect('/login');
   }
 
@@ -253,9 +269,14 @@ export default function EmailsPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredEmails.map((email) => (
-                      <TableRow key={email.id}>
+                      <TableRow key={email.id} className={email.suspicious ? "bg-yellow-50/80" : ""}>
                         <TableCell>
-                          <div className="font-medium">{email.recipient}</div>
+                          <div className="font-medium flex items-center gap-2">
+                            {email.recipient}
+                            {email.suspicious && (
+                              <Badge variant="destructive" className="text-xs animate-pulse">Suspicious</Badge>
+                            )}
+                          </div>
                           {email.isGuest && (
                             <Badge variant="outline" className="text-xs mt-1">Guest</Badge>
                           )}
@@ -272,7 +293,12 @@ export default function EmailsPage() {
                         </TableCell>
                         <TableCell>{email.senderName}</TableCell>
                         <TableCell>{email.companyName}</TableCell>
-                        <TableCell>{getStatusBadge(getEmailStatus(email))}</TableCell>
+                        <TableCell className="flex flex-col gap-1">
+                          {getStatusBadge(getEmailStatus(email))}
+                          {email.suspicious && (
+                            <Badge variant="destructive" className="text-xs mt-1">Suspicious</Badge>
+                          )}
+                        </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {formatDate(email.createdAt)}
                         </TableCell>
@@ -290,7 +316,7 @@ export default function EmailsPage() {
                                 {email.accessLogs.length}
                               </Badge>
                             )}
-                            {email.beaconLogs.some(log => log.status === 'Suspicious') && (
+                            {email.suspicious && (
                               <Badge variant="destructive" className="text-xs">
                                 <AlertTriangle className="h-3 w-3" />
                               </Badge>

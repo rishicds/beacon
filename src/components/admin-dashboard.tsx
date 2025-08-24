@@ -23,6 +23,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./ui/
 import { data, type Company, type User, type Email } from "@/lib/data";
 import AppHeader from "./app-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AdminDashboard() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -45,59 +46,99 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Link
-            href="#"
-            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-          >
-            <GuardianMailLogo className="h-5 w-5 transition-all group-hover:scale-110" />
-            <span className="sr-only">GuardianMail</span>
-          </Link>
-          <Link href="/admin" className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-            <BarChart3 className="h-5 w-5" />
-            <span className="sr-only">Dashboard</span>
-          </Link>
-          <Link
-            href="/admin/companies"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Building className="h-5 w-5" />
-            <span className="sr-only">Companies</span>
-          </Link>
-          <Link
-            href="/admin/users"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Users className="h-5 w-5" />
-            <span className="sr-only">All Users</span>
-          </Link>
-          <Link
-            href="/admin/emails"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Mail className="h-5 w-5" />
-            <span className="sr-only">All Emails</span>
-          </Link>
-          <Link
-            href="/admin/pin-requests"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Key className="h-5 w-5" />
-            <span className="sr-only">PIN Requests</span>
-          </Link>
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-20 flex-col border-r bg-background sm:flex shadow-lg">
+        <nav className="flex flex-col items-center gap-6 px-2 sm:py-8">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="#"
+                  className="group flex h-12 w-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-10 md:w-10 md:text-base shadow-md"
+                >
+                  <GuardianMailLogo className="h-6 w-6 transition-all group-hover:scale-110" />
+                  <span className="sr-only">GuardianMail</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Home</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/admin" className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow">
+                  <BarChart3 className="h-6 w-6" />
+                  <span className="sr-only">Dashboard</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Dashboard</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/admin/companies"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <Building className="h-6 w-6" />
+                  <span className="sr-only">Companies</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Companies</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/admin/users"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <Users className="h-6 w-6" />
+                  <span className="sr-only">All Users</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">All Users</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/admin/emails"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <Mail className="h-6 w-6" />
+                  <span className="sr-only">All Emails</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">All Emails</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/admin/pin-requests"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <Key className="h-6 w-6" />
+                  <span className="sr-only">PIN Requests</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">PIN Requests</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </nav>
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Link
-            href="/settings"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Settings className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
-          </Link>
+        <div className="flex-1" />
+        <nav className="mb-6 flex flex-col items-center gap-6 px-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/settings"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10 shadow"
+                >
+                  <Settings className="h-6 w-6" />
+                  <span className="sr-only">Settings</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Settings</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </nav>
       </aside>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-20">
         <AppHeader />
         <main className="flex-1 p-2 sm:px-4 sm:py-0 md:gap-8">
           <Tabs defaultValue="overview" className="w-full">
@@ -106,30 +147,30 @@ export default function AdminDashboard() {
               <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="beacon">Beacon</TabsTrigger>
               <TabsTrigger value="alerts">Alerts</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
+              {/* <TabsTrigger value="activity">Activity</TabsTrigger> */}
             </TabsList>
             <TabsContent value="overview">
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
                 {/* Stat cards */}
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="pb-2">
                     <CardDescription>Total Companies</CardDescription>
                     <CardTitle className="text-4xl">{companies.length}</CardTitle>
                   </CardHeader>
                 </Card>
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="pb-2">
                     <CardDescription>Total Users</CardDescription>
                     <CardTitle className="text-4xl">{users.length}</CardTitle>
                   </CardHeader>
                 </Card>
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="pb-2">
                     <CardDescription>Emails Sent</CardDescription>
                     <CardTitle className="text-4xl">{emails.length}</CardTitle>
                   </CardHeader>
                 </Card>
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="pb-2">
                     <CardDescription>Recent Activity</CardDescription>
                     <CardTitle className="text-4xl">{emails.filter(e => {
@@ -141,9 +182,9 @@ export default function AdminDashboard() {
                   </CardHeader>
                 </Card>
               </div>
-              <div className="grid gap-4 mt-4 md:grid-cols-2 xl:grid-cols-2">
+              <div className="grid gap-6 mt-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-2">
                 {/* Companies summary */}
-                <Card className="shadow-lg">
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Companies</CardTitle>
                     <Button asChild size="sm">
@@ -162,7 +203,7 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
                 {/* Users summary */}
-                <Card className="shadow-lg">
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Users</CardTitle>
                   </CardHeader>
@@ -195,7 +236,7 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
                 {/* Recent Emails summary */}
-                <Card className="shadow-lg col-span-2">
+                <Card className="shadow-lg hover:shadow-xl transition-shadow col-span-1 md:col-span-2">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Recent Emails</CardTitle>
                     <Button asChild size="sm">

@@ -364,6 +364,10 @@ export const data = {
     revoke: async(emailId: string): Promise<void> => {
         const emailRef = doc(db, 'emails', emailId);
         await updateDoc(emailRef, { revoked: true });
+    },
+    unrevoke: async(emailId: string): Promise<void> => {
+        const emailRef = doc(db, 'emails', emailId);
+        await updateDoc(emailRef, { revoked: false });
     }
   },
   accessLogs: {

@@ -18,6 +18,7 @@ import {
     Users,
     Mail
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BeaconTrackingProps {
     companyId?: string;
@@ -106,6 +107,98 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
         return new Date(timestamp).toLocaleString();
     };
 
+    const [topLocationLatLng, setTopLocationLatLng] = useState<{lat: number, lng: number} | null>(null);
+    const [topLocationAddress, setTopLocationAddress] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (analytics && analytics.topLocationLat && analytics.topLocationLng) {
+            setTopLocationLatLng({ lat: analytics.topLocationLat, lng: analytics.topLocationLng });
+            // Reverse geocode using Nominatim (OpenStreetMap)
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${analytics.topLocationLat}&lon=${analytics.topLocationLng}`)
+                .then(res => res.json())
+                .then(data => {
+                    setTopLocationAddress(data.display_name || null);
+                })
+                .catch(() => setTopLocationAddress(null));
+        }
+    }, [analytics]);
+
+    // Find the most opened location from beaconLogs
+    const getTopLocationFromLogs = () => {
+        if (!beaconLogs.length) return null;
+        // Count occurrences of each location (by lat/lng string or city/country)
+        const locationCounts: Record<string, { count: number; loc: any }> = {};
+        beaconLogs.forEach(log => {
+            let loc: any = {};
+            try {
+                loc = typeof log.location === 'string' ? JSON.parse(log.location) : log.location || {};
+            } catch { loc = {}; }
+            const hasLatLng = typeof loc.latitude === 'number' && typeof loc.longitude === 'number';
+            const key = hasLatLng
+                ? `${loc.latitude},${loc.longitude}`
+                : `${loc.city || 'Unknown'},${loc.country || 'Unknown'}`;
+            if (!locationCounts[key]) locationCounts[key] = { count: 0, loc };
+            locationCounts[key].count++;
+        });
+        // Find the location with the highest count
+        let top: { count: number; loc: any } | null = null;
+        Object.values(locationCounts).forEach((val) => {
+            if (!top || val.count > top.count) top = val;
+        });
+        return top ? top.loc : null;
+    };
+
+    const topLocation = getTopLocationFromLogs();
+
+    useEffect(() => {
+        if (topLocation && typeof topLocation.latitude === 'number' && typeof topLocation.longitude === 'number') {
+            // Fetch address from OpenStreetMap Nominatim
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${topLocation.latitude}&lon=${topLocation.longitude}`)
+                .then(res => res.json())
+                .then(data => {
+                    setTopLocationAddress(data.display_name || null);
+                })
+                .catch(() => setTopLocationAddress(null));
+        } else {
+            setTopLocationAddress(null);
+        }
+    }, [topLocation]);
+
+    // Cache for location addresses
+    const [locationAddresses, setLocationAddresses] = useState<Record<string, string>>({});
+
+    // Fetch and cache addresses for all unique lat/lngs in beaconLogs
+    useEffect(() => {
+        const uniqueLatLngs = Array.from(new Set(
+            beaconLogs
+                .map(log => {
+                    let loc: any = {};
+                    try {
+                        loc = typeof log.location === 'string' ? JSON.parse(log.location) : log.location || {};
+                    } catch { loc = {}; }
+                    if (typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
+                        return `${loc.latitude},${loc.longitude}`;
+                    }
+                    return null;
+                })
+                .filter(Boolean)
+        ));
+        uniqueLatLngs.forEach(key => {
+            if (key && !locationAddresses[key]) {
+                const [lat, lng] = key.split(',');
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        setLocationAddresses(prev => ({ ...prev, [key]: data.display_name || '' }));
+                    })
+                    .catch(() => {
+                        setLocationAddresses(prev => ({ ...prev, [key]: '' }));
+                    });
+            }
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [beaconLogs]);
+
     if (loading) {
         return (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -155,8 +248,8 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
             )}
 
             {/* Analytics Overview */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Opens</CardTitle>
                         <Eye className="h-4 w-4 text-muted-foreground" />
@@ -169,7 +262,7 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Unique Opens</CardTitle>
                         <Users className="h-4 w-4 text-muted-foreground" />
@@ -182,7 +275,7 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Top Device</CardTitle>
                         {getDeviceIcon(Object.keys(analytics.deviceStats)[0] || 'desktop')}
@@ -197,14 +290,30 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Top Location</CardTitle>
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {Object.keys(analytics.locationStats)[0] || 'Unknown'}
+                          {topLocation && typeof topLocation.latitude === 'number' && typeof topLocation.longitude === 'number' ? (
+                            <>
+                              <span>Lat: {topLocation.latitude.toFixed(4)}, Lng: {topLocation.longitude.toFixed(4)}</span>
+                              {topLocationAddress && (
+                                <div className="text-xs text-muted-foreground mt-1">{topLocationAddress}</div>
+                              )}
+                              {topLocation.city || topLocation.country ? (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {topLocation.city ? `${topLocation.city}, ` : ''}{topLocation.country || ''}
+                                </div>
+                              ) : null}
+                            </>
+                          ) : topLocation && (topLocation.city || topLocation.country) ? (
+                            <span>{topLocation.city || 'Unknown'}, {topLocation.country || 'Unknown'}</span>
+                          ) : (
+                            Object.keys(analytics.locationStats)[0] || 'Unknown'
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {String(Object.values(analytics.locationStats)[0] || 0)} opens
@@ -260,41 +369,64 @@ export default function BeaconTracking({ companyId, isAdmin = false }: BeaconTra
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                        {beaconLogs.length > 0 ? (
-                            beaconLogs.slice(0, 10).map((log, index) => (
-                                <div key={log.$id} className="flex items-center justify-between border-b pb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-2">
-                                            {getBrowserIcon(log.browser)}
-                                            {getDeviceIcon(log.device)}
-                                        </div>
-                                        <div>
-                                            <p className="font-medium">{log.recipientEmail}</p>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                <span>{log.device}</span>
-                                                <Separator orientation="vertical" className="h-3" />
-                                                <span>{log.browser}</span>
-                                                <Separator orientation="vertical" className="h-3" />
-                                                <span>{log.os}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <MapPin className="h-3 w-3" />
-                                            <span>{log.location?.city || 'Unknown'}, {log.location?.country || 'Unknown'}</span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {formatTimestamp(log.timestamp)}
-                                        </p>
-                                    </div>
+                  <div className="space-y-4">
+                    {beaconLogs.length > 0 ? (
+                      beaconLogs.slice(0, 10).map((log, index) => {
+                        let loc: any = {};
+                        try {
+                          loc = typeof log.location === 'string' ? JSON.parse(log.location) : log.location || {};
+                        } catch { loc = {}; }
+                        const hasLatLng = typeof loc.latitude === 'number' && typeof loc.longitude === 'number';
+                        const latLngKey = hasLatLng ? `${loc.latitude},${loc.longitude}` : null;
+                        return (
+                          <div key={log.$id} className="flex items-center justify-between border-b pb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                {getBrowserIcon(log.browser)}
+                                {getDeviceIcon(log.device)}
+                              </div>
+                              <div>
+                                <p className="font-medium">{log.recipientEmail}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span>{log.device}</span>
+                                    <Separator orientation="vertical" className="h-3" />
+                                    <span>{log.browser}</span>
+                                    <Separator orientation="vertical" className="h-3" />
+                                    <span>{log.os}</span>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="text-muted-foreground">No tracking activity yet</p>
-                        )}
-                    </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center gap-2 text-sm">
+                                <MapPin className="h-3 w-3" />
+                                {hasLatLng ? (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="underline decoration-dotted cursor-help">
+                                          {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <span>{locationAddresses[latLngKey!] || 'Loading address...'}</span>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  <span>{loc.city || 'Unknown'}, {loc.country || 'Unknown'}</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {formatTimestamp(log.timestamp)}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-muted-foreground">No tracking activity yet</p>
+                    )}
+                  </div>
                 </CardContent>
             </Card>
 
