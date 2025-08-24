@@ -18,6 +18,7 @@ import AppHeader from "@/components/app-header";
 import { data, type User } from "@/lib/data";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
+
 const MAX_FILE_SIZE_MB = 25;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
@@ -31,8 +32,6 @@ export default function ComposePage() {
   const [body, setBody] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [linkExpires, setLinkExpires] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
-  const [allowUnknownRecipients, setAllowUnknownRecipients] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -65,26 +64,22 @@ export default function ComposePage() {
     setUserSearchQuery("");
   };
 
-  const handleAllowUnknownRecipientsChange = (checked: boolean) => {
-    setAllowUnknownRecipients(checked);
-    if (!checked) {
-      // Reset to user selection mode
-      setSelectedUser(null);
-      setRecipient("");
-      setUserSearchQuery("");
-    }
-  };
-
-  const handleFormat = (command: string) => {
-    document.execCommand(command, false);
-    bodyRef.current?.focus();
-  };
+  // allowUnknownRecipients removed; no handler needed
   
   const handleBodyChange = () => {
     if (bodyRef.current) {
         setBody(bodyRef.current.innerHTML);
     }
   }
+
+  const handleFormat = (command: string) => {
+    // execCommand is deprecated but used here for simple rich-text actions in the existing codebase
+    // It keeps the existing UI behavior unchanged.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    document.execCommand(command, false);
+    bodyRef.current?.focus();
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -145,35 +140,30 @@ export default function ComposePage() {
         return;
     }
 
-    // Validate recipient based on mode
-    if (!allowUnknownRecipients && !selectedUser) {
-        toast({
-            variant: "destructive",
-            title: "Invalid Recipient",
-            description: "Please select a user from the database or enable 'Send to Unknown Recipients'.",
-        });
-        return;
+    // Validate recipient
+    if (!selectedUser) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Recipient",
+        description: "Please select a user from the database.",
+      });
+      return;
     }
 
-    setIsLoading(true);
-
-    let attachmentDataUri: string | undefined;
+    let attachmentDataUri: string | undefined = undefined;
     if (attachment) {
-        attachmentDataUri = await fileToDataUri(attachment);
+      attachmentDataUri = await fileToDataUri(attachment);
     }
 
     try {
-      const emailData: any = { 
-        recipient, 
-        subject, 
+      const emailData: any = {
+        recipient,
+        subject,
         body,
         companyId: user.companyId || 'ADMIN', // Use 'ADMIN' as fallback for admin users
         senderId: user.id,
         linkExpires,
-        isGuest,
       };
-
-      // Only include attachment fields if there's an attachment
       if (attachment && attachmentDataUri) {
         emailData.attachmentDataUri = attachmentDataUri;
         emailData.attachmentFilename = attachment.name;
@@ -260,98 +250,71 @@ export default function ComposePage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                  <div className="grid grid-cols-[80px_1fr] items-center gap-4">
-                    <Label htmlFor="allow-unknown" className="text-right text-muted-foreground">
-                      Recipients
-                    </Label>
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        id="allow-unknown" 
-                        checked={allowUnknownRecipients} 
-                        onCheckedChange={handleAllowUnknownRecipientsChange} 
-                      />
-                      <Label htmlFor="allow-unknown" className="text-sm text-muted-foreground">
-                        Send to unknown recipients
-                      </Label>
-                    </div>
-                  </div>
+
 
                   <div className="grid grid-cols-[80px_1fr] items-center gap-4">
                     <Label htmlFor="recipient" className="text-right text-muted-foreground">
                       To
                     </Label>
-                    {allowUnknownRecipients ? (
-                      <Input 
-                        id="recipient" 
-                        name="recipient" 
-                        type="email" 
-                        required 
-                        placeholder="email@example.com" 
-                        value={recipient} 
-                        onChange={e => setRecipient(e.target.value)} 
-                        className="border-0 border-b rounded-none shadow-none focus-visible:ring-0 focus:border-primary" 
-                      />
-                    ) : (
-                      <Popover open={userDropdownOpen} onOpenChange={setUserDropdownOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={userDropdownOpen}
-                            className="w-full justify-between border-0 border-b rounded-none shadow-none focus-visible:ring-0 hover:bg-transparent"
-                          >
-                            {selectedUser ? (
-                              <span className="flex items-center gap-2">
-                                <span>{selectedUser.name}</span>
-                                <span className="text-muted-foreground text-sm">({selectedUser.email})</span>
-                              </span>
+                    <Popover open={userDropdownOpen} onOpenChange={setUserDropdownOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={userDropdownOpen}
+                          className="w-full justify-between border-0 border-b rounded-none shadow-none focus-visible:ring-0 hover:bg-transparent"
+                        >
+                          {selectedUser ? (
+                            <span className="flex items-center gap-2">
+                              <span>{selectedUser.name}</span>
+                              <span className="text-muted-foreground text-sm">({selectedUser.email})</span>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Select a user...</span>
+                          )}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                        <div className="p-2">
+                          <Input
+                            placeholder="Search users..."
+                            value={userSearchQuery}
+                            onChange={(e) => setUserSearchQuery(e.target.value)}
+                            className="mb-2"
+                          />
+                          <div className="max-h-60 overflow-y-auto">
+                            {filteredUsers.length === 0 ? (
+                              <div className="p-2 text-sm text-muted-foreground text-center">
+                                No users found
+                              </div>
                             ) : (
-                              <span className="text-muted-foreground">Select a user...</span>
-                            )}
-                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                          <div className="p-2">
-                            <Input
-                              placeholder="Search users..."
-                              value={userSearchQuery}
-                              onChange={(e) => setUserSearchQuery(e.target.value)}
-                              className="mb-2"
-                            />
-                            <div className="max-h-60 overflow-y-auto">
-                              {filteredUsers.length === 0 ? (
-                                <div className="p-2 text-sm text-muted-foreground text-center">
-                                  No users found
-                                </div>
-                              ) : (
-                                filteredUsers.map((user) => (
-                                  <Button
-                                    key={user.id}
-                                    variant="ghost"
-                                    className="w-full justify-start p-2 h-auto"
-                                    onClick={() => handleUserSelect(user)}
-                                  >
-                                    <div className="flex flex-col items-start">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">{user.name}</span>
-                                        <span className="text-xs bg-muted px-1 rounded">
-                                          {user.role}
-                                        </span>
-                                      </div>
-                                      <span className="text-sm text-muted-foreground">{user.email}</span>
+                              filteredUsers.map((user) => (
+                                <Button
+                                  key={user.id}
+                                  variant="ghost"
+                                  className="w-full justify-start p-2 h-auto"
+                                  onClick={() => handleUserSelect(user)}
+                                >
+                                  <div className="flex flex-col items-start">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{user.name}</span>
+                                      <span className="text-xs bg-muted px-1 rounded">
+                                        {user.role}
+                                      </span>
                                     </div>
-                                    {selectedUser?.id === user.id && (
-                                      <Check className="ml-auto h-4 w-4" />
-                                    )}
-                                  </Button>
-                                ))
-                              )}
-                            </div>
+                                    <span className="text-sm text-muted-foreground">{user.email}</span>
+                                  </div>
+                                  {selectedUser?.id === user.id && (
+                                    <Check className="ml-auto h-4 w-4" />
+                                  )}
+                                </Button>
+                              ))
+                            )}
                           </div>
-                        </PopoverContent>
-                      </Popover>
-                    )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                    <div className="grid grid-cols-[80px_1fr] items-center gap-4">
                     <Label htmlFor="subject" className="text-right text-muted-foreground">
@@ -362,21 +325,10 @@ export default function ComposePage() {
                   
                   <div className="grid grid-cols-[80px_1fr] items-center gap-4 pt-2">
                     <div />
-                     <div className="flex flex-col gap-3">
-                         <div className="flex items-center space-x-2">
-                            <Switch id="is-guest" checked={isGuest} onCheckedChange={setIsGuest} />
-                            <Label htmlFor="is-guest" className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <UserCheck className="h-4 w-4" />
-                                Guest Recipient <span className="text-xs">(PIN-less, 24-hour link)</span>
-                            </Label>
-                        </div>
-                        {!isGuest && (
-                             <div className="flex items-center space-x-2">
-                                <Switch id="link-expires" checked={linkExpires} onCheckedChange={setLinkExpires} />
-                                <Label htmlFor="link-expires" className="text-sm text-muted-foreground">Secure link will expire in 7 days</Label>
-                            </div>
-                        )}
-                     </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch id="link-expires" checked={linkExpires} onCheckedChange={setLinkExpires} />
+                      <Label htmlFor="link-expires" className="text-sm text-muted-foreground">Secure link will expire in 7 days</Label>
+                    </div>
                   </div>
 
                   <div className="border rounded-md mt-4">
