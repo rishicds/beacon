@@ -69,22 +69,22 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 p-4">
              <div className="absolute top-8 flex items-center gap-2">
-                <GuardianMailLogo className="h-8 w-8 text-blue-400" />
-                <span className="text-xl font-bold text-slate-200">GuardianMail</span>
+                <GuardianMailLogo className="h-8 w-8 text-blue-500" />
+                <span className="text-xl font-bold text-gray-900">GuardianMail</span>
             </div>
-            <Card className="w-full max-w-sm bg-slate-800/80 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-black/30">
+            <Card className="w-full max-w-sm bg-white border-gray-200 shadow-xl shadow-gray-200/50">
                 <CardHeader>
-                    <CardTitle className="text-2xl text-slate-200">Login</CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardTitle className="text-2xl text-gray-900">Login</CardTitle>
+                    <CardDescription className="text-gray-600">
                         Enter your email below to login to your account.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-slate-300">Email</Label>
+                            <Label htmlFor="email" className="text-gray-700">Email</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -92,24 +92,24 @@ export default function LoginPage() {
                                 required
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                className="bg-slate-700/50 border-slate-600 text-slate-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
                             />
                         </div>
                         <div className="space-y-2">
-                             <Label htmlFor="password" className="text-slate-300">Password</Label>
+                             <Label htmlFor="password" className="text-gray-700">Password</Label>
                              <Input 
                                 id="password" 
                                 type="password" 
                                 required
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                className="bg-slate-700/50 border-slate-600 text-slate-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
                              />
                         </div>
                         <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-0" disabled={isLoading}>
                            {isLoading ? "Logging in..." : "Login"}
                         </Button>
-                        <Button variant="outline" className="w-full border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-700/50 hover:text-slate-200" asChild>
+                        <Button variant="outline" className="w-full border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900" asChild>
                             <Link href="/signup">
                                 Create an account
                             </Link>
