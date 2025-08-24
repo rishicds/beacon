@@ -20,43 +20,51 @@ import { trackPageView } from "@/lib/tracking-utils";
 
 function UnlockedContentDisplay({ document }: { document: NonNullable<VerifyPinOutput['document']> }) {
   return (
-    <Card className="w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in-95">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
-          <ShieldCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
-        </div>
-        <CardTitle className="text-2xl">Access Granted</CardTitle>
-        <CardDescription>You have successfully unlocked the secure content.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <h3 className="font-semibold">{document.title}</h3>
-        <div
-          className="text-sm text-muted-foreground prose dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: document.description }}
-        />
-        <div className="relative h-96 w-full overflow-hidden rounded-lg border">
-          <Image
-            src={document.imageUrl}
-            alt="Secure document placeholder"
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint={document.imageHint}
+    <div className="flex flex-col items-center w-full">
+      <Card className="w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in-95 bg-gradient-to-br from-white via-slate-50 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-0">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 shadow-lg">
+            <ShieldCheck className="h-9 w-9 text-green-600 dark:text-green-400" />
+          </div>
+          <CardTitle className="text-3xl font-bold tracking-tight text-green-700 dark:text-green-300">Access Granted</CardTitle>
+          <CardDescription className="text-base mt-1">You have successfully unlocked the secure content.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 px-6 pb-8">
+          <h3 className="font-semibold text-xl text-primary mb-2 text-center">{document.title}</h3>
+          <div
+            className="prose dark:prose-invert max-w-none text-base leading-relaxed mx-auto bg-white/80 dark:bg-slate-900/60 rounded-lg p-4 shadow"
+            dangerouslySetInnerHTML={{ __html: document.description }}
           />
-        </div>
-        {document.attachmentFilename && document.attachmentDataUri && (
-          <a
-            href={document.attachmentDataUri}
-            download={document.attachmentFilename}
-            className="!mt-6"
-          >
-            <Button variant="outline" className="w-full">
-              <Download className="mr-2 h-4 w-4" />
-              Download Attachment: {document.attachmentFilename}
-            </Button>
-          </a>
-        )}
-      </CardContent>
-    </Card>
+          {document.imageUrl && document.imageUrl.trim() && document.imageUrl !== 'about:blank' && !/800x600/.test(document.imageUrl) ? (
+            <div className="relative w-full max-w-2xl mx-auto rounded-xl overflow-hidden border shadow-lg bg-white dark:bg-slate-900">
+              <Image
+                src={document.imageUrl}
+                alt="Secure document"
+                width={0}
+                height={0}
+                sizes="100vw"
+                style={{ width: '100%', height: 'auto', maxHeight: 400, objectFit: 'contain' }}
+                data-ai-hint={document.imageHint}
+                className="transition-all duration-300 hover:scale-105"
+                priority
+              />
+            </div>
+          ) : null}
+          {document.attachmentFilename && document.attachmentDataUri && (
+            <a
+              href={document.attachmentDataUri}
+              download={document.attachmentFilename}
+              className="block mt-6"
+            >
+              <Button variant="outline" className="w-full">
+                <Download className="mr-2 h-4 w-4" />
+                Download Attachment: {document.attachmentFilename}
+              </Button>
+            </a>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
