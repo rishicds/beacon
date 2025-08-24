@@ -334,7 +334,30 @@ export default function AdminDashboard() {
               <BeaconTracking isAdmin={true} />
             </TabsContent>
             <TabsContent value="alerts">
-              <RealTimeAlerts />
+              {/* Hardcoded alerts for demonstration */}
+              <div className="space-y-4 p-4">
+                <Card className="border-l-4 border-red-500 bg-red-50">
+                  <CardHeader className="flex flex-row items-center justify-between pb-1">
+                    <CardTitle className="text-base text-red-700">Security Breach Detected</CardTitle>
+                    <span className="text-xs text-red-600">2 min ago</span>
+                  </CardHeader>
+                  <CardContent className="text-sm text-red-800">Multiple failed login attempts detected from IP 192.168.1.101. User account locked for 30 minutes.</CardContent>
+                </Card>
+                <Card className="border-l-4 border-yellow-500 bg-yellow-50">
+                  <CardHeader className="flex flex-row items-center justify-between pb-1">
+                    <CardTitle className="text-base text-yellow-700">Suspicious Email Activity</CardTitle>
+                    <span className="text-xs text-yellow-600">10 min ago</span>
+                  </CardHeader>
+                  <CardContent className="text-sm text-yellow-800">Unusual volume of outbound emails detected from user john.doe@company.com.</CardContent>
+                </Card>
+                <Card className="border-l-4 border-blue-500 bg-blue-50">
+                  <CardHeader className="flex flex-row items-center justify-between pb-1">
+                    <CardTitle className="text-base text-blue-700">New Device Login</CardTitle>
+                    <span className="text-xs text-blue-600">30 min ago</span>
+                  </CardHeader>
+                  <CardContent className="text-sm text-blue-800">User jane.smith@company.com logged in from a new device (Chrome, Windows 10).</CardContent>
+                </Card>
+              </div>
             </TabsContent>
             <TabsContent value="activity">
               <ActivityLogs />
