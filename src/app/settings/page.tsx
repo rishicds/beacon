@@ -29,15 +29,15 @@ export default function SettingsPage() {
 
     if (loading) {
         return (
-            <div className="flex min-h-screen flex-col bg-muted/40">
+            <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100">
                 <AppHeader />
                 <main className="flex-1 p-4 sm:p-6">
-                    <Card className="max-w-4xl mx-auto shadow-lg">
-                        <CardContent className="p-8">
+                    <Card className="w-[90%] mx-auto shadow-xl bg-white border-gray-200">
+                        <CardContent className="p-12">
                             <div className="flex items-center justify-center">
                                 <div className="text-center">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                                    <p className="text-muted-foreground">Loading...</p>
+                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-6"></div>
+                                    <p className="text-gray-600 text-lg">Loading settings...</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -49,15 +49,23 @@ export default function SettingsPage() {
 
     if (!user) {
         return (
-            <div className="flex min-h-screen flex-col bg-muted/40">
+            <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100">
                 <AppHeader />
                 <main className="flex-1 p-4 sm:p-6">
-                    <Card className="max-w-4xl mx-auto shadow-lg">
-                        <CardContent className="p-8">
+                    <Card className="w-[90%] mx-auto shadow-xl bg-white border-gray-200">
+                        <CardContent className="p-12">
                             <div className="text-center">
-                                <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-                                <p className="text-muted-foreground mb-4">You must be logged in to access settings.</p>
-                                <Button onClick={() => router.push('/login')}>Sign In</Button>
+                                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                                    <Shield className="h-8 w-8 text-red-500" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-3">Authentication Required</h2>
+                                <p className="text-gray-600 mb-6">You must be logged in to access settings.</p>
+                                <Button 
+                                    onClick={() => router.push('/login')}
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-3"
+                                >
+                                    Sign In
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -173,118 +181,140 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col bg-muted/40">
+        <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100">
             <AppHeader />
             <main className="flex-1 p-4 sm:p-6">
-                <Card className="max-w-4xl mx-auto shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <Link href={dashboardHref} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                            <ArrowLeft className="h-4 w-4" />
-                            <span>Back to Dashboard</span>
-                        </Link>
-                        <div className="flex items-center gap-2">
-                            <Settings className="h-5 w-5" />
-                            <h1 className="text-2xl font-bold">Settings</h1>
+                <Card className="w-[90%] mx-auto shadow-xl bg-white border-gray-200">
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                        <div className="flex flex-row items-center justify-between">
+                            <Link href={dashboardHref} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                                <ArrowLeft className="h-4 w-4" />
+                                <span>Back to Dashboard</span>
+                            </Link>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500">
+                                    <Settings className="h-6 w-6 text-white" />
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+                            </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-8 p-8">
                         {/* Profile Section */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <User className="h-5 w-5 text-primary" />
-                                <h2 className="text-xl font-semibold">Profile Information</h2>
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+                                    <User className="h-6 w-6 text-white" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900">Profile Information</h2>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-                                <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Name</Label>
-                                    <p className="text-sm">{user.name}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                                    <p className="text-sm">{user.email}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Role</Label>
-                                    <p className="text-sm capitalize">{user.role.replace('_', ' ')}</p>
-                                </div>
-                                {user.companyId && (
-                                    <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Company ID</Label>
-                                        <p className="text-sm">{user.companyId}</p>
+                            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                                <CardContent className="p-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-green-700">Name</Label>
+                                            <p className="text-lg text-gray-900 font-medium">{user.name}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-green-700">Email</Label>
+                                            <p className="text-lg text-gray-900 font-medium">{user.email}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-green-700">Role</Label>
+                                            <p className="text-lg text-gray-900 font-medium capitalize">{user.role.replace('_', ' ')}</p>
+                                        </div>
+                                        {user.companyId && (
+                                            <div className="space-y-2">
+                                                <Label className="text-sm font-semibold text-green-700">Company ID</Label>
+                                                <p className="text-lg text-gray-900 font-medium font-mono">{user.companyId}</p>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </CardContent>
+                            </Card>
                         </div>
 
-                        <Separator />
+                        <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
                         {/* Security Section */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <Shield className="h-5 w-5 text-primary" />
-                                <h2 className="text-xl font-semibold">Security Settings</h2>
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-orange-500">
+                                    <Shield className="h-6 w-6 text-white" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900">Security Settings</h2>
                             </div>
                             
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <LockKeyhole className="h-5 w-5 text-primary" />
-                                        <div>
-                                            <p className="font-medium">Secure PIN</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {user.pinSet 
-                                                    ? "PIN is currently set and active"
-                                                    : "No PIN set - required for sending secure emails"
-                                                }
-                                            </p>
+                                <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 hover:shadow-lg transition-all duration-200">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 rounded-full bg-gradient-to-r from-red-500 to-orange-500">
+                                                    <LockKeyhole className="h-6 w-6 text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xl font-semibold text-gray-900">Secure PIN</p>
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        {user.pinSet 
+                                                            ? "✅ PIN is currently set and active"
+                                                            : "⚠️ No PIN set - required for sending secure emails"
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                {user.role !== 'employee' && user.pinSet && (
+                                                    <Button 
+                                                        variant="outline" 
+                                                        onClick={handleResetPin}
+                                                        disabled={isLoading}
+                                                        className="border-red-300 text-red-700 hover:bg-red-50"
+                                                    >
+                                                        Reset PIN
+                                                    </Button>
+                                                )}
+                                                {user.role === 'employee' ? (
+                                                    <Button 
+                                                        onClick={() => setShowPinRequestSection(!showPinRequestSection)}
+                                                        disabled={isLoading}
+                                                        className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                                                    >
+                                                        Request PIN Change
+                                                    </Button>
+                                                ) : (
+                                                    <Button 
+                                                        onClick={() => setShowPinSection(!showPinSection)}
+                                                        disabled={isLoading}
+                                                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+                                                    >
+                                                        {user.pinSet ? "Change PIN" : "Set PIN"}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {user.role !== 'employee' && user.pinSet && (
-                                            <Button 
-                                                variant="outline" 
-                                                onClick={handleResetPin}
-                                                disabled={isLoading}
-                                            >
-                                                Reset PIN
-                                            </Button>
-                                        )}
-                                        {user.role === 'employee' ? (
-                                            <Button 
-                                                onClick={() => setShowPinRequestSection(!showPinRequestSection)}
-                                                disabled={isLoading}
-                                            >
-                                                Request PIN Change
-                                            </Button>
-                                        ) : (
-                                            <Button 
-                                                onClick={() => setShowPinSection(!showPinSection)}
-                                                disabled={isLoading}
-                                            >
-                                                {user.pinSet ? "Change PIN" : "Set PIN"}
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
 
                                 {showPinSection && (
-                                    <Card className="border-primary/20">
-                                        <CardHeader>
-                                            <CardTitle className="text-lg">
+                                    <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg">
+                                        <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100">
+                                            <CardTitle className="text-xl text-blue-900 flex items-center gap-2">
+                                                <LockKeyhole className="h-5 w-5" />
                                                 {user.pinSet ? "Update Your PIN" : "Set Your PIN"}
                                             </CardTitle>
-                                            <CardDescription>
+                                            <CardDescription className="text-blue-700">
                                                 {user.pinSet 
                                                     ? "Enter your current PIN and choose a new 6-digit PIN."
                                                     : "Choose a secure 6-digit PIN for authorizing email operations."
                                                 }
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent>
-                                            <form onSubmit={handleSetPin} className="space-y-4">
+                                        <CardContent className="p-6">
+                                            <form onSubmit={handleSetPin} className="space-y-6">
                                                 {user.pinSet && (
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="currentPin">Current PIN</Label>
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="currentPin" className="text-lg font-semibold text-gray-900">Current PIN</Label>
                                                         <Input
                                                             id="currentPin"
                                                             type="password"
@@ -292,13 +322,13 @@ export default function SettingsPage() {
                                                             value={currentPin}
                                                             onChange={e => setCurrentPin(e.target.value.replace(/\D/g, ''))}
                                                             required={user.pinSet}
-                                                            className="text-center text-2xl tracking-[0.5em]"
+                                                            className="text-center text-3xl tracking-[0.8em] h-16 border-2 border-blue-300 focus:border-blue-500 bg-white"
                                                             placeholder="••••••"
                                                         />
                                                     </div>
                                                 )}
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="newPin">New 6-Digit PIN</Label>
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="newPin" className="text-lg font-semibold text-gray-900">New 6-Digit PIN</Label>
                                                     <Input
                                                         id="newPin"
                                                         type="password"
@@ -306,12 +336,12 @@ export default function SettingsPage() {
                                                         value={newPin}
                                                         onChange={e => setNewPin(e.target.value.replace(/\D/g, ''))}
                                                         required
-                                                        className="text-center text-2xl tracking-[0.5em]"
+                                                        className="text-center text-3xl tracking-[0.8em] h-16 border-2 border-blue-300 focus:border-blue-500 bg-white"
                                                         placeholder="••••••"
                                                     />
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="confirmPin">Confirm New PIN</Label>
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="confirmPin" className="text-lg font-semibold text-gray-900">Confirm New PIN</Label>
                                                     <Input 
                                                         id="confirmPin" 
                                                         type="password" 
@@ -319,24 +349,24 @@ export default function SettingsPage() {
                                                         value={confirmPin}
                                                         onChange={e => setConfirmPin(e.target.value.replace(/\D/g, ''))}
                                                         required
-                                                        className="text-center text-2xl tracking-[0.5em]"
+                                                        className="text-center text-3xl tracking-[0.8em] h-16 border-2 border-blue-300 focus:border-blue-500 bg-white"
                                                         placeholder="••••••"
                                                     />
                                                 </div>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-4 pt-4">
                                                     <Button 
                                                         type="button" 
                                                         variant="outline" 
                                                         onClick={() => setShowPinSection(false)}
                                                         disabled={isLoading}
-                                                        className="flex-1"
+                                                        className="flex-1 h-12 text-lg border-gray-300 hover:bg-gray-50"
                                                     >
                                                         Cancel
                                                     </Button>
                                                     <Button 
                                                         type="submit" 
                                                         disabled={isLoading}
-                                                        className="flex-1"
+                                                        className="flex-1 h-12 text-lg bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
                                                     >
                                                         {isLoading ? "Saving..." : user.pinSet ? "Update PIN" : "Set PIN"}
                                                     </Button>
@@ -347,44 +377,47 @@ export default function SettingsPage() {
                                 )}
 
                                 {showPinRequestSection && user.role === 'employee' && (
-                                    <Card className="border-primary/20">
-                                        <CardHeader>
-                                            <CardTitle className="text-lg">Request PIN Change</CardTitle>
-                                            <CardDescription>
+                                    <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg">
+                                        <CardHeader className="bg-gradient-to-r from-orange-100 to-red-100">
+                                            <CardTitle className="text-xl text-orange-900 flex items-center gap-2">
+                                                <User className="h-5 w-5" />
+                                                Request PIN Change
+                                            </CardTitle>
+                                            <CardDescription className="text-orange-700">
                                                 Please provide a reason for the PIN change request. This will be sent to your admin for approval.
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent>
-                                            <form onSubmit={handlePinRequest} className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="pinRequestReason">Reason for PIN Change</Label>
+                                        <CardContent className="p-6">
+                                            <form onSubmit={handlePinRequest} className="space-y-6">
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="pinRequestReason" className="text-lg font-semibold text-gray-900">Reason for PIN Change</Label>
                                                     <Textarea
                                                         id="pinRequestReason"
                                                         value={pinRequestReason}
                                                         onChange={e => setPinRequestReason(e.target.value)}
                                                         required
                                                         maxLength={250}
-                                                        className="text-sm min-h-[80px]"
+                                                        className="text-base min-h-[120px] border-2 border-orange-300 focus:border-orange-500 bg-white"
                                                         placeholder="Please provide a detailed reason for your PIN change request..."
                                                     />
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="text-sm text-orange-600 font-medium">
                                                         {pinRequestReason.length}/250 characters (minimum 10 required)
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-4 pt-4">
                                                     <Button 
                                                         type="button" 
                                                         variant="outline" 
                                                         onClick={() => setShowPinRequestSection(false)}
                                                         disabled={isLoading}
-                                                        className="flex-1"
+                                                        className="flex-1 h-12 text-lg border-gray-300 hover:bg-gray-50"
                                                     >
                                                         Cancel
                                                     </Button>
                                                     <Button 
                                                         type="submit" 
                                                         disabled={isLoading}
-                                                        className="flex-1"
+                                                        className="flex-1 h-12 text-lg bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                                                     >
                                                         {isLoading ? "Submitting..." : "Submit Request"}
                                                     </Button>
@@ -396,16 +429,28 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <Separator />
+                        <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
                         {/* Additional Settings Placeholder */}
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold">Preferences</h2>
-                            <div className="p-4 bg-muted/50 rounded-lg">
-                                <p className="text-sm text-muted-foreground">
-                                    Additional settings and preferences will be available here in future updates.
-                                </p>
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+                                    <Settings className="h-6 w-6 text-white" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900">Preferences</h2>
                             </div>
+                            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+                                <CardContent className="p-6">
+                                    <div className="text-center py-8">
+                                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
+                                            <Settings className="h-8 w-8 text-white" />
+                                        </div>
+                                        <p className="text-lg text-gray-600">
+                                            Additional settings and preferences will be available here in future updates.
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
                     </CardContent>
                 </Card>
