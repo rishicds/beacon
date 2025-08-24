@@ -62,6 +62,32 @@ export default function EmailDetailPage() {
         const company = companiesData.find(c => c.id === emailData.companyId);
         const relatedAccessLogs = accessLogsData.filter(log => log.emailId === emailId);
 
+        // --- AGENTIC AI: Analyze for suspicious activity via API route ---
+        if (!emailData.revoked && (beaconLogs.length > 0 || relatedAccessLogs.length > 0)) {
+          try {
+            const res = await fetch('/api/analyze-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ beaconLogs, accessLogs: relatedAccessLogs })
+            });
+            if (res.ok) {
+              const { shouldRevoke } = await res.json();
+              if (shouldRevoke) {
+                await data.emails.revoke(emailData.id);
+                toast({
+                  variant: "destructive",
+                  title: "Email Auto-Revoked",
+                  description: "This email was automatically revoked due to suspicious activity detected by AI."
+                });
+                emailData.revoked = true;
+              }
+            }
+          } catch (aiErr) {
+            console.error('AI analysis failed:', aiErr);
+          }
+        }
+        // --- END AGENTIC AI ---
+
         setEmail({
           ...emailData,
           senderName: sender?.name || 'Unknown',
