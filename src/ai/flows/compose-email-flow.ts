@@ -65,9 +65,16 @@ const composeEmailFlow = ai.defineFlow({
           <p><strong>Important:</strong> Click the secure link above to access the confidential content.</p>
         `;
 
+        // Get sender email for subject
+        let senderEmail = '';
+        if (input.senderId && input.senderId !== 'SYSTEM') {
+          const sender = await data.users.findById(input.senderId);
+          senderEmail = sender?.email || '';
+        }
+        const subjectWithSender = `[Secure] ${input.subject}` + (senderEmail ? ` [from: ${senderEmail}]` : '');
         await sendEmail(
           input.recipient,
-          `[Secure] ${input.subject}`,
+          subjectWithSender,
           emailHtml,
           input.attachmentDataUri,
           input.attachmentFilename,
@@ -122,9 +129,11 @@ const composeEmailFlow = ai.defineFlow({
           <p><strong>Note:</strong> The confidential content will only be visible after clicking the secure link and entering your PIN.</p>
         `;
 
+        // Append sender email to subject
+        const subjectWithSender = `[Secure] ${input.subject} [from: ${sender.email}]`;
         await sendEmail(
           input.recipient,
-          `[Secure] ${input.subject}`,
+          subjectWithSender,
           emailHtml,
           input.attachmentDataUri,
           input.attachmentFilename,
@@ -138,7 +147,14 @@ const composeEmailFlow = ai.defineFlow({
       }
 
       // ---------- System Email Workflow ----------
-      await sendEmail(input.recipient, input.subject, input.body);
+      // Try to get sender email if senderId is provided
+      let senderEmail = '';
+      if (input.senderId && input.senderId !== 'SYSTEM') {
+        const sender = await data.users.findById(input.senderId);
+        senderEmail = sender?.email || '';
+      }
+      const subjectWithSender = input.subject + (senderEmail ? ` [from: ${senderEmail}]` : '');
+      await sendEmail(input.recipient, subjectWithSender, input.body);
       return {
         success: true,
         message: 'System email has been sent successfully.',
