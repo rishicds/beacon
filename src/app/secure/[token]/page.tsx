@@ -21,18 +21,17 @@ import { trackPageView } from "@/lib/tracking-utils";
 function UnlockedContentDisplay({ document }: { document: NonNullable<VerifyPinOutput['document']> }) {
   return (
     <div className="flex flex-col items-center w-full">
-      <Card className="w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in-95 bg-gradient-to-br from-white via-slate-50 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-0">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 shadow-lg">
-            <ShieldCheck className="h-9 w-9 text-green-600 dark:text-green-400" />
-          </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-green-700 dark:text-green-300">Access Granted</CardTitle>
-          <CardDescription className="text-base mt-1">You have successfully unlocked the secure content.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 px-6 pb-8">
-          <h3 className="font-semibold text-xl text-primary mb-2 text-center">{document.title}</h3>
+      <Card className="w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in-95 bg-gradient-to-br from-white via-slate-50 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-0 relative">
+        <div className="absolute top-4 right-6 flex items-center gap-2 z-10">
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/60 text-green-700 dark:text-green-300 text-xs font-semibold shadow-sm">
+            <ShieldCheck className="h-4 w-4" /> Access Granted
+          </span>
+        </div>
+        <CardContent className="space-y-6 px-0 pb-8 pt-8">
+          <h3 className="font-semibold text-2xl text-primary mb-2 text-center">{document.title}</h3>
           <div
-            className="prose dark:prose-invert max-w-none text-base leading-relaxed mx-auto bg-white/80 dark:bg-slate-900/60 rounded-lg p-4 shadow"
+            className="prose dark:prose-invert text-base leading-relaxed bg-white/80 dark:bg-slate-900/60 rounded-lg p-6 shadow mx-auto"
+            style={{ width: '100%', maxWidth: '100%' }}
             dangerouslySetInnerHTML={{ __html: document.description }}
           />
           {document.imageUrl && document.imageUrl.trim() && document.imageUrl !== 'about:blank' && !/800x600/.test(document.imageUrl) ? (
