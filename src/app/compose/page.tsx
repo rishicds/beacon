@@ -163,6 +163,7 @@ export default function ComposePage() {
         companyId: user.companyId || 'ADMIN', // Use 'ADMIN' as fallback for admin users
         senderId: user.id,
         linkExpires,
+        isGuest: false, // Always false as guest sending is removed
       };
       if (attachment && attachmentDataUri) {
         emailData.attachmentDataUri = attachmentDataUri;
