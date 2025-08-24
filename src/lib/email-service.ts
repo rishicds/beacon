@@ -13,7 +13,7 @@ export class EmailService {
                     Query.equal('companyId', companyId),
                     Query.equal('revoked', true)
                 ] : [ 
-                    Query.equal('revoked', true)
+                    Query.equal('revoked', true) 
                 ]
             );
             return response.documents.map((doc: any) => doc.$id || doc.id);
