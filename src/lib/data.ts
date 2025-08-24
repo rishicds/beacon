@@ -170,11 +170,14 @@ export const data = {
                 try {
                     // Look up the current user's stored password (for demo purposes)
                     const MOCK_PASSWORDS: Record<string, string> = {
-                        "rishi.404@outlook.com": "password123",
+                        
+                        "nirjharbarma@gmail.com": "Admin123",
                         "tony@stark.com": "password123",
                         "pepper@stark.com": "password123",
                         "bruce@wayne.com": "password123",
                         "lucius@wayne.com": "password123",
+                        "aditighosh668@gmail.com": "000000"
+                        // <-- Add your company admin here
                     };
                     
                     const currentUserPassword = MOCK_PASSWORDS[currentUserEmail];
@@ -187,30 +190,53 @@ export const data = {
                 }
             }
 
+            // Use actual companyId and senderId for onboarding email
+            let onboardingCompanyId = userData.companyId || 'SYSTEM';
+            let onboardingSenderId = currentUser?.uid || 'SYSTEM';
+            // Fetch company name for onboarding email if available
+            let companyName = '';
+            if (userData.companyId) {
+                try {
+                    const company = await data.companies.findById(userData.companyId);
+                    if (company) companyName = company.name;
+                } catch (e) {
+                    console.warn('Could not fetch company name for onboarding email:', e);
+                }
+            }
+
             const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
             const onboardingLink = `${baseUrl}/onboarding/${setupToken}`;
             const emailBody = `
-                <h1>Welcome to GuardianMail!</h1>
-                <p>Your account has been created. Please complete your account onboarding by setting up your password and security PIN.</p>
+                <h1>Welcome to Beacon${companyName ? ' at ' + companyName : ''}!</h1>
+                <p>Your account has been created${companyName ? ` for <b>${companyName}</b>` : ''}. Please complete your account onboarding by setting up your password and security PIN.</p>
                 <p>Click the link below to get started. This link is valid for 24 hours.</p>
                 <p><a href="${onboardingLink}">Complete Your Account Setup</a></p>
                 <p>If you did not request this, please ignore this email.</p>
             `;
             // --- Robust error handling for onboarding email ---
+            console.log('[ONBOARDING] Attempting to send onboarding email to', userData.email, 'for company', onboardingCompanyId);
             try {
                 await composeAndSendEmail({
                     recipient: userData.email,
-                    subject: "Welcome to GuardianMail - Complete Your Onboarding",
+                    subject: `Welcome to Beacon${companyName ? ' at ' + companyName : ''} - Complete Your Onboarding`,
                     body: emailBody,
-                    companyId: 'SYSTEM', 
-                    senderId: 'SYSTEM',
+                    companyId: onboardingCompanyId, 
+                    senderId: onboardingSenderId,
                     linkExpires: false,
                     isGuest: false,
                 });
+                console.log('[ONBOARDING] Onboarding email sent successfully to', userData.email);
             } catch (emailError) {
-                // Optionally: Rollback user creation if email fails, or just log and surface error
-                console.error("Onboarding email failed to send:", emailError);
-                throw new Error("Employee created, but onboarding email failed to send. Please check email configuration.");
+                console.error('[ONBOARDING] FAILED to send onboarding email:', emailError);
+                let errorMsg = '';
+                if (emailError instanceof Error) {
+                  errorMsg = emailError.message;
+                } else if (typeof emailError === 'object' && emailError !== null && 'message' in emailError) {
+                  errorMsg = (emailError as any).message;
+                } else {
+                  errorMsg = String(emailError);
+                }
+                throw new Error("Employee created, but onboarding email failed to send. Please check email configuration. " + errorMsg);
             }
 
             return { id: authUser.uid, ...newUser };
@@ -219,11 +245,13 @@ export const data = {
             if (currentUser && currentUserEmail) {
                 try {
                     const MOCK_PASSWORDS: Record<string, string> = {
-                        "rishi.404@outlook.com": "password123",
+                        
+                        "nirjharbarma@gmail.com": "Admin123",
                         "tony@stark.com": "password123",
                         "pepper@stark.com": "password123",
                         "bruce@wayne.com": "password123",
                         "lucius@wayne.com": "password123",
+                        // <-- Add your company admin here
                     };
                     
                     const currentUserPassword = MOCK_PASSWORDS[currentUserEmail];
