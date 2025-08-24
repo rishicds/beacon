@@ -13,7 +13,7 @@ export const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Shield className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Secure Email + Beacon</span>
+              <span className="text-xl font-bold text-gray-900">Beacon</span>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">
               Confidential communication. Real-time intelligence. Total control.
@@ -94,7 +94,7 @@ export const Footer = () => {
               © 2025 Secure Email + Beacon Platform. All rights reserved.
             </div>
             <div className="text-gray-400 text-xs">
-              Built with advanced encryption & AI to safeguard your communication.
+              Built with love ❤️ by VibeCoders at StatusCode2
             </div>
           </div>
         </div>
