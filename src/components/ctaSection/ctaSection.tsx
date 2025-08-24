@@ -7,9 +7,9 @@ import Link from "next/link";
 
 export default function CTASection() {
   return (
-    <section className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 py-20">
+    <section className="relative bg-gradient-to-b from-white via-blue-600 to-indigo-600 py-20">
       {/* Subtle background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-950/5 to-indigo-950/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30" />
       
       <div className="container mx-auto max-w-4xl px-4 relative z-10">
         <motion.div
@@ -21,15 +21,15 @@ export default function CTASection() {
         >
           {/* Heading */}
           <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Ready to secure your
-              <span className="block bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
                 communications?
               </span>
             </h2>
             
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Join thousands of organizations protecting their sensitive data with BeaconMail.
+            <p className="text-gray-700 text-lg max-w-2xl mx-auto">
+              Join thousands of organizations protecting their sensitive data with Beacon.
             </p>
           </div>
 
@@ -43,7 +43,7 @@ export default function CTASection() {
             </Link>
             
             <Link href="/login">
-              <button className="group h-12 px-8 border border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-sm text-slate-300 hover:text-white rounded-lg transition-all duration-300 flex items-center">
+              <button className="group h-12 px-8 border border-white/50 bg-white/90 hover:bg-white backdrop-blur-sm text-blue-700 hover:text-blue-800 rounded-lg transition-all duration-300 flex items-center shadow-lg">
                 <span className="text-base font-medium">Learn More</span>
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
               </button>
@@ -51,7 +51,7 @@ export default function CTASection() {
           </div>
 
           {/* Trust indicator */}
-          <p className="text-slate-500 text-sm">
+          <p className="text-gray-700 text-sm">
             No credit card required • 14-day free trial • Cancel anytime
           </p>
         </motion.div>
@@ -59,3 +59,6 @@ export default function CTASection() {
     </section>
   );
 }
+
+
+
